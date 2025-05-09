@@ -47,7 +47,7 @@ jobs:
       # Step 5: Run API tests
       - name: Run API tests
         working-directory: ./backend
-        run: npm test:api
+        run: npm run test:api
 
       # Step 6: Run SonarQube analysis for backend
       - name: Run SonarQube analysis
