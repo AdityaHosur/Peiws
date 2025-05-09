@@ -13,6 +13,17 @@ jobs:
     name: Backend CI
     runs-on: ubuntu-latest
 
+    services:
+      mongodb:
+        image: mongo:5.0
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --eval 'db.adminCommand(\"ping\")'" 
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       # Step 1: Checkout the code
       - name: Checkout code
@@ -36,7 +47,7 @@ jobs:
             fi
             npm install
         env:
-          MONGO_URI: ${{ secrets.MONGO_URI }}
+          MONGO_URI: mongodb://localhost:27017/testdb
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
 
       # Step 4: Run backend tests
@@ -48,7 +59,7 @@ jobs:
       - name: Run API tests
         working-directory: ./backend
         env:
-            MONGO_URI: ${{ secrets.MONGO_URI }}
+            MONGO_URI: mongodb://localhost:27017/testdb
             JWT_SECRET: ${{ secrets.JWT_SECRET }}
         run: npm run test:api
 
@@ -58,8 +69,8 @@ jobs:
         with:
           projectBaseDir: ./backend
           args: >
-            -Dsonar.projectKey=your_project_key
-            -Dsonar.organization=your_organization
+            -Dsonar.projectKey=AdityaHosur_Peiws
+            -Dsonar.organization=adityahosur
             -Dsonar.host.url=https://sonarcloud.io
             -Dsonar.login=${{ secrets.SONAR_TOKEN }}
 
@@ -111,7 +122,7 @@ jobs:
         with:
           projectBaseDir: ./frontend
           args: >
-            -Dsonar.projectKey=your_project_key
-            -Dsonar.organization=your_organization
+            -Dsonar.projectKey=AdityaHosur_Peiws
+            -Dsonar.organization=adityahosur
             -Dsonar.host.url=https://sonarcloud.io
             -Dsonar.login=${{ secrets.SONAR_TOKEN }}
