@@ -5,13 +5,7 @@ module.exports = defineConfig({
     setupNodeEvents(on, config) {
       // implement node event listeners here
     },
-    baseUrl: 'http://localhost:3000',
-  },
-
-  component: {
-    devServer: {
-      framework: "react",
-      bundler: "webpack",
-    },
+    specPattern: 'cypress/e2e/**/*.cy.{js,jsx,ts,tsx}', // Ensure this matches your test file naming
+    baseUrl: 'http://localhost:3000', // Set your app's base URL
   },
 });

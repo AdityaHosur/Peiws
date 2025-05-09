@@ -47,6 +47,9 @@ jobs:
       # Step 5: Run API tests
       - name: Run API tests
         working-directory: ./backend
+        env:
+            MONGO_URI: ${{ secrets.MONGO_URI }}
+            JWT_SECRET: ${{ secrets.JWT_SECRET }}
         run: npm run test:api
 
       # Step 6: Run SonarQube analysis for backend
