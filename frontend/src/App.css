@@ -1,0 +1,27 @@
+:root {
+  --primary-light: #f8f3d9; /* Cream */
+  --primary-dark: #000000; /* Black */
+  --text-light: #333333; /* Dark Gray */
+  --text-dark: #ffffff; /* White */
+  --accent-light: #e0c97f; /* Gold for light mode accents */
+  --accent-dark: #444444; /* Dark Gray for dark mode accents */
+}
+
+body.light-mode {
+  background-color: var(--primary-light);
+  color: var(--text-light);
+}
+
+body.dark-mode {
+  background-color: var(--primary-dark);
+  color: var(--text-dark);
+}
+
+h1, p {
+  margin: 1rem;
+}
+
+main {
+  padding: 2rem;
+  text-align: center;
+}

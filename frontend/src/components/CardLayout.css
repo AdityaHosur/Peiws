@@ -1,0 +1,16 @@
+.card-layout {
+  margin: 10px;
+  padding: 20px;
+  border-radius: 15px;
+  background-color: var(--accent-light);
+  color: var(--text-light);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s, color 0.3s;
+  height: calc(100vh - 140px); /* Adjust height to fill the screen below the Navbar */
+  overflow-y: auto; /* Add scrolling for content that overflows */
+}
+
+body.dark-mode .card-layout {
+  background-color: var(--accent-dark);
+  color: var(--text-dark);
+}

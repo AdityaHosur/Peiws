@@ -1,0 +1,102 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  backend:
+    name: Backend CI
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the code
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Step 2: Set up Node.js
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: 'yarn'
+
+      # Step 3: Install backend dependencies
+      - name: Install backend dependencies
+        working-directory: ./backend
+        run: yarn install
+        env:
+          MONGO_URI: ${{ secrets.MONGO_URI }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+
+      # Step 4: Run backend tests
+      - name: Run backend tests
+        working-directory: ./backend
+        run: yarn test
+
+      # Step 5: Run API tests
+      - name: Run API tests
+        working-directory: ./backend
+        run: yarn test:api
+
+      # Step 6: Run SonarQube analysis for backend
+      - name: Run SonarQube analysis
+        uses: sonarsource/sonarcloud-github-action@v2
+        with:
+          projectBaseDir: ./backend
+          args: >
+            -Dsonar.projectKey=your_project_key
+            -Dsonar.organization=your_organization
+            -Dsonar.host.url=https://sonarcloud.io
+            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+
+  frontend:
+    name: Frontend CI
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the code
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Step 2: Set up Node.js
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: 'yarn'
+
+      # Step 3: Install frontend dependencies
+      - name: Install frontend dependencies
+        working-directory: ./frontend
+        run: yarn install
+
+      # Step 4: Run frontend tests
+      - name: Run frontend tests
+        working-directory: ./frontend
+        run: yarn test
+
+      # Step 5: Run E2E tests
+      - name: Run E2E tests
+        working-directory: ./frontend
+        run: yarn test:e2e
+
+      # Step 6: Build frontend
+      - name: Build frontend
+        working-directory: ./frontend
+        run: yarn build
+
+      # Step 7: Run SonarQube analysis for frontend
+      - name: Run SonarQube analysis
+        uses: sonarsource/sonarcloud-github-action@v2
+        with:
+          projectBaseDir: ./frontend
+          args: >
+            -Dsonar.projectKey=your_project_key
+            -Dsonar.organization=your_organization
+            -Dsonar.host.url=https://sonarcloud.io
+            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
