@@ -23,17 +23,17 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 16
-          cache: 'yarn'
+          cache: 'npm'
 
       # Step 3: Install backend dependencies
       - name: Install backend dependencies
         working-directory: ./backend
         run: |
-            if [ ! -f yarn.lock ]; then
-            echo "Error: yarn.lock not found in ./backend"
+            if [ ! -f package-lock.json ]; then
+            echo "Error: package-lock.json not found in ./backend"
             exit 1
             fi
-            yarn install
+            npm install
         env:
           MONGO_URI: ${{ secrets.MONGO_URI }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
@@ -41,12 +41,12 @@ jobs:
       # Step 4: Run backend tests
       - name: Run backend tests
         working-directory: ./backend
-        run: yarn test
+        run: npm test
 
       # Step 5: Run API tests
       - name: Run API tests
         working-directory: ./backend
-        run: yarn test:api
+        run: npm test:api
 
       # Step 6: Run SonarQube analysis for backend
       - name: Run SonarQube analysis
@@ -73,32 +73,32 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 16
-          cache: 'yarn'
+          cache: 'npm'
 
       # Step 3: Install frontend dependencies
       - name: Install frontend dependencies
         working-directory: ./frontend
         run: |
-            if [ ! -f yarn.lock ]; then
-            echo "Error: yarn.lock not found in ./backend"
+            if [ ! -f package-lock.json ]; then
+            echo "Error: package-lock.json not found in ./backend"
             exit 1
             fi
-            yarn install
+            npm install
 
       # Step 4: Run frontend tests
       - name: Run frontend tests
         working-directory: ./frontend
-        run: yarn test
+        run: npm test
 
       # Step 5: Run E2E tests
       - name: Run E2E tests
         working-directory: ./frontend
-        run: yarn test:e2e
+        run: npm run test:e2e
 
       # Step 6: Build frontend
       - name: Build frontend
         working-directory: ./frontend
-        run: yarn build
+        run: npm run build
 
       # Step 7: Run SonarQube analysis for frontend
       - name: Run SonarQube analysis
