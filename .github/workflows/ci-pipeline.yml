@@ -28,7 +28,12 @@ jobs:
       # Step 3: Install backend dependencies
       - name: Install backend dependencies
         working-directory: ./backend
-        run: yarn install
+        run: |
+            if [ ! -f yarn.lock ]; then
+            echo "Error: yarn.lock not found in ./backend"
+            exit 1
+            fi
+            yarn install
         env:
           MONGO_URI: ${{ secrets.MONGO_URI }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
@@ -73,7 +78,12 @@ jobs:
       # Step 3: Install frontend dependencies
       - name: Install frontend dependencies
         working-directory: ./frontend
-        run: yarn install
+        run: |
+            if [ ! -f yarn.lock ]; then
+            echo "Error: yarn.lock not found in ./backend"
+            exit 1
+            fi
+            yarn install
 
       # Step 4: Run frontend tests
       - name: Run frontend tests
