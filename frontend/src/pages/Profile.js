@@ -9,7 +9,7 @@ const Profile = () => {
   const [description, setDescription] = useState('');
   const [inviteEmail, setInviteEmail] = useState('');
   const [role, setRole] = useState('member');
-  const [organizations, setOrganizations] = useState([
+  const [organizations] = useState([
     { name: 'Organization A', role: 'Admin' },
     { name: 'Organization B', role: 'Member' },
   ]);
