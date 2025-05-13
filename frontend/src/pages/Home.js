@@ -1,6 +1,15 @@
 import React, { useState, useEffect } from 'react';
+import { Route, Routes, Navigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import CardLayout from '../components/CardLayout';
+import Dashboard from './Dashboard';
+import Login from './Login';
+import Register from './Register';
+import Upload from './Upload';
+import Review from './Review';
+import View from './View';
+import Organization from './Organization';
+import Profile from './Profile';
 
 const Home = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -17,10 +26,18 @@ const Home = () => {
     <div>
       <Navbar toggleTheme={toggleTheme} isDarkMode={isDarkMode} />
       <CardLayout>
-        <main>
-          <h1>Welcome to the Peer Review System</h1>
-          <p>Navigate through the options in the navbar to explore the features.</p>
-        </main>
+        <Routes>
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/auth" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/upload" element={<Upload />} />
+          <Route path="/review" element={<Review />} />
+          <Route path="/view" element={<View />} />
+          <Route path="/organisation" element={<Organization />} />
+          <Route path="/profile" element={<Profile />} />
+          {/* Default route redirects to the Auth page */}
+          <Route path="/" element={<Navigate to="/auth" />} />
+        </Routes>
       </CardLayout>
     </div>
   );

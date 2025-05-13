@@ -1,0 +1,121 @@
+.login-card {
+  background-color: var(--primary-light);
+  color: var(--text-light);
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  padding: 1.5rem 2rem;
+  max-width: 400px;
+  margin: 2rem auto;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+body.dark-mode .login-card {
+  background-color: var(--primary-dark);
+  color: var(--text-dark);
+}
+
+.login-title {
+  font-size: 1.8rem;
+  margin-bottom: 0.8rem;
+  text-align: center;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem; /* Reduced spacing between form elements */
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+label {
+  font-size: 1rem;
+  margin-bottom: 0.3rem; /* Reduced spacing below labels */
+}
+
+input {
+  padding: 0.8rem;
+  border: 1px solid var(--accent-light);
+  border-radius: 4px;
+  font-size: 1rem;
+  transition: border-color 0.3s;
+}
+
+input:focus {
+  outline: none;
+  border-color: var(--accent-dark);
+}
+
+body.dark-mode input {
+  background-color: var(--primary-dark);
+  color: var(--text-dark);
+  border-color: var(--accent-dark);
+}
+
+.login-button {
+  background-color: var(--accent-light);
+  color: var(--text-dark);
+  border: none;
+  border-radius: 4px;
+  padding: 0.8rem;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s, color 0.3s;
+  margin-top: 0.3rem;
+}
+
+.login-button:hover {
+  background-color: var(--accent-dark);
+  color: var(--text-light);
+}
+
+body.dark-mode .login-button {
+  background-color: var(--accent-dark);
+  color: var(--text-light);
+}
+
+body.dark-mode .login-button:hover {
+  background-color: var(--accent-light);
+  color: var(--text-dark);
+}
+
+/* Auth switch link styling */
+.auth-switch {
+  margin-top: 1.2rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(224, 201, 127, 0.3);
+  text-align: center;
+}
+
+body.dark-mode .auth-switch {
+  border-top-color: rgba(68, 68, 68, 0.5);
+}
+
+.auth-switch p {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.auth-link {
+  color: var(--accent-light);
+  text-decoration: none;
+  font-weight: bold;
+  transition: color 0.3s;
+  margin-left: 0.3rem;
+}
+
+.auth-link:hover {
+  color: var(--accent-dark);
+  text-decoration: underline;
+}
+
+body.dark-mode .auth-link {
+  color: var(--accent-dark);
+}
+
+body.dark-mode .auth-link:hover {
+  color: var(--accent-light);
+}

@@ -1,0 +1,120 @@
+.upload-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  justify-content: center;
+}
+
+.upload-card {
+  background-color: var(--primary-light);
+  color: var(--text-light);
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  padding: 2rem;
+  margin:1 rem;
+  flex: 1 1 400px;
+  max-width: 500px;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+body.dark-mode .upload-card {
+  background-color: var(--primary-dark);
+  color: var(--text-dark);
+}
+
+.upload-title {
+  font-size: 1.8rem;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+/* Dashed Box for Upload */
+.upload-drag-box {
+  border: 3px dashed var(--accent-light);
+  border-radius: 8px;
+  padding: 4rem;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.3s, background-color 0.3s;
+  background-color: var(--primary-light);
+  color: var(--text-light);
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 130px;
+}
+
+body.dark-mode .upload-drag-box {
+  background-color: var(--primary-dark);
+  color: var(--text-dark);
+  border-color: var(--accent-dark);
+}
+
+.upload-drag-box:hover {
+  border-color: var(--accent-dark);
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+body.dark-mode .upload-drag-box:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.upload-drag-box p {
+  margin: 0;
+}
+
+.upload-drag-box input[type="file"] {
+  display: none;
+}
+
+.form-group {
+  margin-top: 1rem;
+}
+
+label {
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+input[type="text"], select {
+  padding: 0.8rem;
+  border: 1px solid var(--accent-light);
+  border-radius: 4px;
+  font-size: 1rem;
+  transition: border-color 0.3s;
+}
+
+input[type="text"]:focus, select:focus {
+  outline: none;
+  border-color: var(--accent-dark);
+}
+
+.upload-button {
+  background-color: var(--accent-light);
+  color: var(--text-dark);
+  border: none;
+  border-radius: 4px;
+  padding: 0.8rem;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s, color 0.3s;
+  align-self: center;
+  margin-top: 1rem;
+  width: 100%;
+}
+
+.upload-button:hover {
+  background-color: var(--accent-dark);
+  color: var(--text-light);
+}
+
+body.dark-mode .upload-button {
+  background-color: var(--accent-dark);
+  color: var(--text-light);
+}
+
+body.dark-mode .upload-button:hover {
+  background-color: var(--accent-light);
+  color: var(--text-dark);
+}
