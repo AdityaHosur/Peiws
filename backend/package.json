@@ -5,7 +5,7 @@
   "scripts": {
     "test": "jest",
     "test:api": "jest --config jest.api.config.js",
-    "start": "node app.js"
+    "start": "nodemon server.js"
   },
   "author": "",
   "license": "ISC",
@@ -15,8 +15,12 @@
     "dependencies": "^0.0.1",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
+    "gridfs-stream": "^1.1.1",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.14.1"
+    "mongodb": "^6.16.0",
+    "mongoose": "^8.14.1",
+    "multer": "^1.4.4",
+    "nodemon": "^3.1.10"
   },
   "devDependencies": {
     "jest": "^29.7.0",
