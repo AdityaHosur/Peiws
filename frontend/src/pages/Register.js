@@ -1,15 +1,24 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link,useNavigate } from 'react-router-dom';
+import { registerUser } from '../services/api';
 import './register.css';
 
 const Register = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Registration submitted:', { name, email, password });
+    try {
+      await registerUser(name, email, password);
+      alert('Registration successful! Please login.');
+      navigate('/auth'); // Redirect to login page
+    } catch (err) {
+      setError(err.message || 'Failed to register');
+    }
   };
 
   return (

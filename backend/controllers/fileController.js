@@ -1,5 +1,6 @@
 const { getGridFSBucket } = require('../config/gridfs');
 const Upload = require('../models/Upload');
+const Review = require('../models/Review');
 const mongoose = require('mongoose');
 
 // Upload a file
@@ -49,6 +50,15 @@ exports.uploadFile = async (req, res) => {
         });
         
         await uploadDetails.save();
+
+        // Create review records for each reviewer
+        const reviewers = req.body.reviewers || [];
+        const reviewRecords = reviewers.map((reviewerId) => ({
+          fileId: uploadStream.id,
+          reviewerId,
+        }));
+
+        await Review.insertMany(reviewRecords);
 
         res.status(201).json({
           message: 'File uploaded successfully',

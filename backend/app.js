@@ -1,8 +1,10 @@
 const express = require('express');
 const dotenv = require('dotenv');
+const corsMiddleware = require('./middlewares/corsMiddleware');
 const authRoutes = require('./routes/authRoutes');
 const orgRoutes=require('./routes/organizationRoutes');
 const fileRoutes=require('./routes/fileRoutes');
+const reviewRoutes=require('./routes/reviewRoutes');
 const { connectToGridFS } = require('./config/gridfs');
 const db=require('./config/database');
 
@@ -12,6 +14,7 @@ const app = express();
 
 // Middleware
 app.use(express.json());
+app.use(corsMiddleware)
 
 // Database connection
 db.then(() => {
@@ -23,5 +26,6 @@ db.then(() => {
 app.use('/auth', authRoutes);
 app.use('/organization', orgRoutes);
 app.use('/file', fileRoutes);
+app.use('/review', reviewRoutes);
 
 module.exports = app

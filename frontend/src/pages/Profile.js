@@ -1,34 +1,75 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import {
+  getProfile,
+  updateProfile,
+  getOrganizations,
+  joinOrganization,
+  createOrganization,
+} from '../services/api';
 import './profile.css';
 
 const Profile = () => {
-  const [name, setName] = useState('John Doe');
-  const [email] = useState('johndoe@example.com'); // Email is not editable
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [organizations, setOrganizations] = useState([]);
   const [activeTab, setActiveTab] = useState('create');
   const [orgName, setOrgName] = useState('');
   const [description, setDescription] = useState('');
-  const [inviteEmail, setInviteEmail] = useState('');
-  const [role, setRole] = useState('member');
-  const [organizations] = useState([
-    { name: 'Organization A', role: 'Admin' },
-    { name: 'Organization B', role: 'Member' },
-  ]);
+  const [error, setError] = useState('');
+  const token = localStorage.getItem('token'); // Retrieve token from localStorage
 
-  const handleProfileUpdate = (e) => {
+  // Fetch profile and organizations on component mount
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const profile = await getProfile(token);
+        setName(profile.name);
+        setEmail(profile.email);
+
+        const orgs = await getOrganizations(token);
+        setOrganizations(orgs.organizations);
+      } catch (err) {
+        setError(err.message || 'Failed to fetch data');
+      }
+    };
+
+    fetchData();
+  }, [token]);
+
+  // Handle profile update
+  const handleProfileUpdate = async (e) => {
     e.preventDefault();
-    console.log('Updated Profile:', { name });
+    try {
+      await updateProfile(token, name);
+      alert('Profile updated successfully!');
+    } catch (err) {
+      setError(err.message || 'Failed to update profile');
+    }
   };
 
-  const handleJoin = (e) => {
+  // Handle organization creation
+  const handleCreate = async (e) => {
     e.preventDefault();
-    console.log('Joining Organization:', orgName);
+    try {
+      await createOrganization(token, orgName, description);
+      alert('Organization created successfully!');
+      setOrgName('');
+      setDescription('');
+    } catch (err) {
+      setError(err.message || 'Failed to create organization');
+    }
   };
 
-  const handleCreate = (e) => {
+  // Handle joining an organization
+  const handleJoin = async (e) => {
     e.preventDefault();
-    console.log('Creating Organization:', orgName);
-    console.log('Description:', description);
-    console.log('Invite Member:', inviteEmail, 'with role:', role);
+    try {
+      await joinOrganization(token, orgName);
+      alert('Join request sent successfully!');
+      setOrgName('');
+    } catch (err) {
+      setError(err.message || 'Failed to join organization');
+    }
   };
 
   return (
@@ -61,7 +102,7 @@ const Profile = () => {
             Update Profile
           </button>
         </form>
-        
+
         <div className="organizations-section">
           <h3 className="section-title">My Organizations</h3>
           <ul className="organization-list">
@@ -79,13 +120,13 @@ const Profile = () => {
       <div className="profile-card org-content">
         {/* Segmented Button */}
         <div className="segmented-control">
-          <button 
+          <button
             className={`segment-button ${activeTab === 'create' ? 'active' : ''}`}
             onClick={() => setActiveTab('create')}
           >
             Create
           </button>
-          <button 
+          <button
             className={`segment-button ${activeTab === 'join' ? 'active' : ''}`}
             onClick={() => setActiveTab('join')}
           >
@@ -141,33 +182,6 @@ const Profile = () => {
                   required
                 />
               </div>
-              
-              <div className="invite-section">
-                <h4>Invite Members</h4>
-                <div className="form-group">
-                  <label htmlFor="inviteEmail">Email</label>
-                  <input
-                    type="email"
-                    id="inviteEmail"
-                    value={inviteEmail}
-                    onChange={(e) => setInviteEmail(e.target.value)}
-                    placeholder="Enter member's email"
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="role">Role</label>
-                  <select
-                    id="role"
-                    value={role}
-                    onChange={(e) => setRole(e.target.value)}
-                  >
-                    <option value="admin">Admin</option>
-                    <option value="reviewer">Reviewer</option>
-                    <option value="member">Member</option>
-                  </select>
-                </div>
-              </div>
-              
               <button type="submit" className="profile-button">
                 Create
               </button>
