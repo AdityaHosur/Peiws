@@ -174,3 +174,29 @@ export const updateMemberRole = async (token, organizationId, memberId, role) =>
     throw error.response?.data || { message: 'An error occurred' };
   }
 };
+
+// Fetch files related to an organization
+export const getFilesByOrganization = async (token, organizationName) => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/file/organization/${organizationName}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: 'An error occurred' };
+  }
+};
+
+// Assign reviewers to a file
+export const assignReviewersToFile = async (token, fileId, reviewers) => {
+  try {
+    const response = await axios.put(
+      `${API_BASE_URL}/file/${fileId}/reviewers`,
+      { reviewers },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: 'An error occurred' };
+  }
+};

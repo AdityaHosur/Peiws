@@ -56,11 +56,13 @@ exports.uploadFile = async (req, res) => {
         const uploadDetails = new Upload({
           fileId: uploadStream.id, // GridFS file ID
           fileGroupId, // Group ID for file versions
+          filename: req.file.originalname, // Original filename
           version: newVersion, // Increment version number
           uploader: req.user.id, // Authenticated user ID
           tags: req.body.tags || [], // Tags from the request body
           reviewers: reviewerIds || [], // Reviewers from the request body
           visibility: req.body.visibility || 'private', // Visibility from the request body
+          organizationName: req.body.visibility === 'organization' ? req.body.organizationName : null, // Add organization name if visibility is "organization"
           status: req.body.status || 'draft', // Status from the request body
           deadline: req.body.deadline ? new Date(req.body.deadline) : null, // Deadline from the request body
         });
@@ -134,6 +136,63 @@ exports.downloadFile = (req, res) => {
       const readStream = gfsBucket.openDownloadStreamByName(filename);
       readStream.pipe(res);
     });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error });
+  }
+};
+
+exports.getFilesByOrganization = async (req, res) => {
+  try {
+    const { organizationName } = req.params;
+
+    // Find files with the given organization name
+    const files = await Upload.find({ organizationName });
+
+    if (!files || files.length === 0) {
+      return res.status(404).json({ message: 'No files found for this organization' });
+    }
+
+    res.status(200).json(files);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error });
+  }
+};
+
+exports.assignReviewers = async (req, res) => {
+  try {
+    const { fileId } = req.params;
+    const { reviewers } = req.body;
+
+    // Validate reviewers
+    if (!Array.isArray(reviewers) || reviewers.length === 0) {
+      return res.status(400).json({ message: 'Reviewers list cannot be empty' });
+    }
+
+    // Find the file
+    const file = await Upload.findById(fileId);
+    if (!file) {
+      return res.status(404).json({ message: 'File not found' });
+    }
+
+    // Assign reviewers
+    file.reviewers = reviewers;
+    await file.save();
+
+    // Create review records for each reviewer
+    const reviewRecords = reviewers.map((reviewerId) => ({
+      fileId: fileId,
+      reviewerId,
+    }));
+
+    try {
+      const insertedReviews = await Review.insertMany(reviewRecords);
+      console.log('Inserted Reviews:', insertedReviews);
+    } catch (error) {
+      console.error('Error inserting reviews:', error);
+      return res.status(500).json({ message: 'Failed to create review records', error });
+    }
+
+    res.status(200).json({ message: 'Reviewers assigned successfully and review records created', file });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error });
   }

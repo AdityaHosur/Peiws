@@ -16,8 +16,8 @@ exports.createOrganization = async (req, res) => {
     const organization = new Organization({
       name,
       description,
-      admin: req.user.id, // Assuming `req.user` contains the authenticated user's ID
-      members: [req.user.id],
+      admin: [req.user.id], // Assuming `req.user` contains the authenticated user's ID
+      members: [],
     });
 
     await organization.save();

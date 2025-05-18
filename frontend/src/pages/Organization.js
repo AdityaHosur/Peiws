@@ -5,6 +5,8 @@ import {
   inviteUsersToOrganization,
   getOrganizationMembers,
   updateMemberRole,
+  getFilesByOrganization,
+  assignReviewersToFile,
 } from '../services/api'; // Import API functions
 import './organization.css';
 
@@ -20,6 +22,10 @@ const Organization = () => {
   const [inviteEmails, setInviteEmails] = useState('');
   const [members, setMembers] = useState([]); // State to store members
   const [loadingMembers, setLoadingMembers] = useState(false); // Loading state for members
+  const [files, setFiles] = useState([]); // State to store files
+  const [loadingFiles, setLoadingFiles] = useState(false); // Loading state for files
+  const [selectedReviewers, setSelectedReviewers] = useState({}); // State to store selected reviewers for each file
+  const [selectedFile, setSelectedFile] = useState(null); // State to track the selected file
   const [error, setError] = useState('');
   const token = localStorage.getItem('token'); // Retrieve token from localStorage
 
@@ -47,6 +53,20 @@ const Organization = () => {
       }
     };
     fetchMembers();
+  }
+  if (managementTab === 'assign' && selectedOrg) {
+    const fetchFiles = async () => {
+      try {
+        setLoadingFiles(true);
+        const data = await getFilesByOrganization(token, selectedOrg.name);
+        setFiles(data);
+      } catch (err) {
+        setError(err.message || 'Failed to fetch files');
+      } finally {
+        setLoadingFiles(false);
+      }
+    };
+    fetchFiles();
   }
   }, [managementTab, selectedOrg, token]);
 
@@ -119,6 +139,34 @@ const handleRoleUpdate = async (memberId, newRole) => {
     );
   } catch (err) {
     setError(err.message || 'Failed to update role');
+  }
+};
+
+// Handle reviewer selection
+const handleReviewerSelection = (fileId, reviewerId) => {
+  setSelectedReviewers((prev) => ({
+    ...prev,
+    [fileId]: prev[fileId]
+      ? prev[fileId].includes(reviewerId)
+        ? prev[fileId].filter((id) => id !== reviewerId)
+        : [...prev[fileId], reviewerId]
+      : [reviewerId],
+  }));
+};
+
+// Handle assigning reviewers
+const handleAssignReviewers = async (fileId) => {
+  try {
+    const reviewers = selectedReviewers[fileId] || [];
+    if (reviewers.length === 0) {
+      alert('Please select at least one reviewer');
+      return;
+    }
+
+    await assignReviewersToFile(token, fileId, reviewers);
+    alert('Reviewers assigned successfully!');
+  } catch (err) {
+    setError(err.message || 'Failed to assign reviewers');
   }
 };
 
@@ -326,6 +374,76 @@ const handleRoleUpdate = async (memberId, newRole) => {
                             </li>
                           ))}
                         </ul>
+                      )}
+                    </div>
+                  )}
+                  {managementTab === 'assign' && (
+                    <div className="assign-tab">
+                      <h4 className="section-title">Assign Reviewers</h4>
+                      {loadingFiles ? (
+                        <p>Loading files...</p>
+                      ) : (
+                        <ul className="files-list">
+                          {files.map((file) => (
+                            <li key={file._id} className="file-item">
+                              <div className="file-header">
+                                <span className="file-name">{file.filename}</span>
+                                <span className="file-deadline">
+                                  {file.deadline ? new Date(file.deadline).toLocaleDateString() : 'No deadline'}
+                                </span>
+                              </div>
+                              <div className="file-footer">
+                                <span className="file-tags">Tags: {file.tags.join(', ')}</span>
+                                <span className="file-status">
+                                  Status: {file.reviewers.length === 0 ? 'Not Assigned' : 'Assigned'}
+                                </span>
+                                <button
+                                  className="assign-button"
+                                  onClick={() => setSelectedFile(file)}
+                                >
+                                  Assign
+                                </button>
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+
+                      {/* Reviewer Selection Modal */}
+                      {selectedFile && (
+                        <div className="reviewer-modal">
+                          <div className="modal-content">
+                            <h4>Select Reviewers for {selectedFile.filename}</h4>
+                            <ul className="reviewers-list">
+                              {members.map((member) => (
+                                <li key={member.id} className="reviewer-item">
+                                  <label>
+                                    <input
+                                      type="checkbox"
+                                      checked={selectedReviewers[selectedFile._id]?.includes(member.id) || false}
+                                      onChange={() => handleReviewerSelection(selectedFile._id, member.id)}
+                                    />
+                                    {member.name} ({member.email})
+                                  </label>
+                                </li>
+                              ))}
+                            </ul>
+                            <div className="modal-actions">
+                              <button
+                                className="action-button"
+                                onClick={() => handleAssignReviewers(selectedFile._id)}
+                              >
+                                Assign Reviewers
+                              </button>
+                              <button
+                                className="cancel-button"
+                                onClick={() => setSelectedFile(null)}
+                              >
+                                Close
+                              </button>
+                            </div>
+                          </div>
+                        </div>
                       )}
                     </div>
                   )}
