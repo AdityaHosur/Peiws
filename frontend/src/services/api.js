@@ -200,3 +200,18 @@ export const assignReviewersToFile = async (token, fileId, reviewers) => {
     throw error.response?.data || { message: 'An error occurred' };
   }
 };
+
+export const getAssignedReviews = async (token) => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/review/assigned`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: 'An error occurred' };
+  }
+};
+
+export const getFileStreamUrl = (fileId) => {
+  return `${API_BASE_URL}/review/stream/${fileId}`;
+};

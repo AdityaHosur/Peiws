@@ -1,190 +1,66 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { getAssignedReviews,getFileStreamUrl } from '../services/api';
 import './review.css';
 
 const Review = () => {
-  const [selectedDoc, setSelectedDoc] = useState(null);
-  const [activeTab, setActiveTab] = useState('view');
-  const [comments, setComments] = useState([]);
-  const [feedback, setFeedback] = useState('');
-  const [rubric, setRubric] = useState({
-    clarity: 0,
-    grammar: 0,
-    structure: 0,
-  });
-  const [summary, setSummary] = useState('');
+  const [assignedReviews, setAssignedReviews] = useState([]);
+  const [selectedReview, setSelectedReview] = useState(null);
+  const [error, setError] = useState('');
+  const token = localStorage.getItem('token'); // Retrieve token from localStorage
 
-  // Sample document list
-  const documents = [
-    { id: 1, title: 'Research Paper', status: 'Pending Review' },
-    { id: 2, title: 'Technical Report', status: 'In Progress' },
-    { id: 3, title: 'Case Study', status: 'Not Started' },
-    { id: 4, title: 'Academic Essay', status: 'Pending Review' },
-    { id: 5, title: 'Project Proposal', status: 'In Progress' },
-  ];
-
-  const handleAddComment = (e) => {
-    e.preventDefault();
-    const newComment = e.target.elements.comment.value;
-    if (newComment) {
-      setComments([...comments, newComment]);
-      e.target.elements.comment.value = '';
-    }
-  };
-
-  const handleRubricChange = (e) => {
-    const { name, value } = e.target;
-    setRubric({ ...rubric, [name]: parseInt(value) });
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log('Feedback:', feedback);
-    console.log('Rubric:', rubric);
-    console.log('Summary:', summary);
-  };
+  // Fetch assigned reviews on component mount
+  useEffect(() => {
+    const fetchAssignedReviews = async () => {
+      try {
+        const data = await getAssignedReviews(token);
+        setAssignedReviews(data);
+      } catch (err) {
+        setError(err.message || 'Failed to fetch assigned reviews');
+      }
+    };
+    fetchAssignedReviews();
+  }, [token]);
 
   return (
     <div className="review-container">
-      {/* Left Card: Documents List */}
+      {/* Left Card: Assigned Reviews */}
       <div className="review-card docs-list">
-        <h2 className="review-title">Documents to Review</h2>
+        <h2 className="review-title">Assigned Reviews</h2>
+        {error && <p className="error-message">{error}</p>}
         <ul className="documents-list">
-          {documents.map((doc) => (
-            <li 
-              key={doc.id} 
-              className={`document-item ${selectedDoc?.id === doc.id ? 'selected' : ''}`}
-              onClick={() => setSelectedDoc(doc)}
+          {assignedReviews.map((review) => (
+            <li
+              key={review._id}
+              className={`document-item ${selectedReview?._id === review._id ? 'selected' : ''}`}
+              onClick={() => setSelectedReview(review)}
             >
-              <span className="document-title">{doc.title}</span>
-              <span className="document-status">{doc.status}</span>
+              <span className="document-title">{review.fileId.filename}</span>
+              <span className="document-tags">Tags: {review.fileId.tags.join(', ')}</span>
+              <span className="document-deadline">
+                Deadline: {review.fileId.deadline ? new Date(review.fileId.deadline).toLocaleDateString() : 'No deadline'}
+              </span>
             </li>
           ))}
         </ul>
       </div>
 
-      {/* Right Card: Content Area */}
+      {/* Right Card: Review Details */}
       <div className="review-card content-area">
-        {/* Segmented Button */}
-        <div className="segmented-control">
-          <button 
-            className={`segment-button ${activeTab === 'view' ? 'active' : ''}`}
-            onClick={() => setActiveTab('view')}
-          >
-            View
-          </button>
-          <button 
-            className={`segment-button ${activeTab === 'feedback' ? 'active' : ''}`}
-            onClick={() => setActiveTab('feedback')}
-          >
-            Feedback
-          </button>
-        </div>
-
-        {/* Content Display */}
-        <div className="tab-content">
-          {activeTab === 'view' && (
-            <div className="document-viewer">
-              <h3 className="content-title">
-                {selectedDoc ? selectedDoc.title : 'Select a document to view'}
-              </h3>
-              <p>
-                This is a sample document. Click on any part of the text to add an inline comment.
-              </p>
-              <form className="comment-form" onSubmit={handleAddComment}>
-                <input
-                  type="text"
-                  name="comment"
-                  placeholder="Add an inline comment"
-                  required
-                />
-                <button type="submit" className="comment-button">
-                  Add Comment
-                </button>
-              </form>
-              <ul className="comment-list">
-                {comments.map((comment, index) => (
-                  <li key={index} className="comment-item">
-                    {comment}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {activeTab === 'feedback' && (
-            <div>
-              <h3 className="content-title">
-                {selectedDoc ? `Feedback for ${selectedDoc.title}` : 'Select a document to review'}
-              </h3>
-              <form className="review-form" onSubmit={handleSubmit}>
-                <div className="form-group">
-                  <label htmlFor="feedback">Add Feedback/Comments</label>
-                  <textarea
-                    id="feedback"
-                    value={feedback}
-                    onChange={(e) => setFeedback(e.target.value)}
-                    placeholder="Write your feedback here"
-                    required
-                  />
-                </div>
-                <div className="form-group">
-                  <label>Rate with Rubric</label>
-                  <div className="rubric-group">
-                    <label>
-                      Clarity:
-                      <input
-                        type="number"
-                        name="clarity"
-                        value={rubric.clarity}
-                        onChange={handleRubricChange}
-                        min="0"
-                        max="5"
-                        required
-                      />
-                    </label>
-                    <label>
-                      Grammar:
-                      <input
-                        type="number"
-                        name="grammar"
-                        value={rubric.grammar}
-                        onChange={handleRubricChange}
-                        min="0"
-                        max="5"
-                        required
-                      />
-                    </label>
-                    <label>
-                      Structure:
-                      <input
-                        type="number"
-                        name="structure"
-                        value={rubric.structure}
-                        onChange={handleRubricChange}
-                        min="0"
-                        max="5"
-                        required
-                      />
-                    </label>
-                  </div>
-                </div>
-                <div className="form-group">
-                  <label htmlFor="summary">Submit Summary</label>
-                  <textarea
-                    id="summary"
-                    value={summary}
-                    onChange={(e) => setSummary(e.target.value)}
-                    placeholder="Write a summary of your review"
-                    required
-                  />
-                </div>
-                <button type="submit" className="review-button">
-                  Submit Review
-                </button>
-              </form>
-            </div>
-          )}
-        </div>
+        {selectedReview ? (
+          <div>
+            <h3 className="content-title">Review: {selectedReview.fileId.filename}</h3>
+            {/* Display the file */}
+            <iframe
+              src={getFileStreamUrl(selectedReview.fileId.fileId)}
+              title="File Preview"
+              width="100%"
+              height="430px"
+              style={{ border: 'none'}}
+            ></iframe>
+          </div>
+        ) : (
+          <p>Select a document to view details</p>
+        )}
       </div>
     </div>
   );

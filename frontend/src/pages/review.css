@@ -70,6 +70,12 @@ body.dark-mode .document-item.selected {
   margin-bottom: 0.5rem;
 }
 
+.document-tags,
+.document-deadline {
+  font-size: 0.85rem;
+  color: #555;
+}
+
 .document-status {
   font-size: 0.85rem;
   font-style: italic;
@@ -83,6 +89,12 @@ body.dark-mode .document-item.selected {
   max-height: 72vh;
   overflow-y: auto;
 }
+
+iframe {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+} 
 
 /* Segmented control */
 .segmented-control {
