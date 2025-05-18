@@ -29,6 +29,22 @@ exports.uploadFile = async (req, res) => {
           fileGroupId = new mongoose.Types.ObjectId();
         }
 
+        // Convert reviewers string to array if it exists
+        let reviewerIds = [];
+        console.log('Reviewers before:', req.body.reviewers);
+        try {
+          // Parse the JSON string if it exists
+          if (req.body.reviewers) {
+            const parsedReviewers = JSON.parse(req.body.reviewers);
+            if (Array.isArray(parsedReviewers)) {
+              reviewerIds = parsedReviewers.map(id => new mongoose.Types.ObjectId(id.trim()));
+              console.log('Parsed reviewerIds:', reviewerIds);
+            }
+          }
+        } catch (error) {
+          console.error('Error parsing reviewers:', error);
+        }
+        
         // Get the latest version number for the fileGroupId
         const latestVersion = await Upload.find({ fileGroupId })
           .sort({ version: -1 })
@@ -43,7 +59,7 @@ exports.uploadFile = async (req, res) => {
           version: newVersion, // Increment version number
           uploader: req.user.id, // Authenticated user ID
           tags: req.body.tags || [], // Tags from the request body
-          reviewers: req.body.reviewers || [], // Reviewers from the request body
+          reviewers: reviewerIds || [], // Reviewers from the request body
           visibility: req.body.visibility || 'private', // Visibility from the request body
           status: req.body.status || 'draft', // Status from the request body
           deadline: req.body.deadline ? new Date(req.body.deadline) : null, // Deadline from the request body
@@ -52,14 +68,24 @@ exports.uploadFile = async (req, res) => {
         await uploadDetails.save();
 
         // Create review records for each reviewer
-        const reviewers = req.body.reviewers || [];
-        const reviewRecords = reviewers.map((reviewerId) => ({
-          fileId: uploadStream.id,
-          reviewerId,
-        }));
+        console.log('Reviewers after:', reviewerIds);
 
-        await Review.insertMany(reviewRecords);
+        if (reviewerIds.length > 0) {
+          const reviewRecords = reviewerIds.map((reviewerId) => ({
+            fileId: uploadStream.id,
+            reviewerId,
+          }));
 
+          try {
+            const insertedReviews = await Review.insertMany(reviewRecords);
+            console.log('Inserted Reviews:', insertedReviews);
+          } catch (error) {
+            console.error('Error inserting reviews:', error);
+            return res.status(500).json({ message: 'Failed to create review records', error });
+          }
+        } else {
+          console.log('No reviewers provided');
+        }
         res.status(201).json({
           message: 'File uploaded successfully',
           fileId: uploadStream.id,

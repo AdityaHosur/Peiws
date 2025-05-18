@@ -269,13 +269,13 @@ body.dark-mode .action-button:hover {
 }
 
 /* Lists in management sections */
-.invites-list, .assignments-list, .members-list, .history-list, .uploads-list {
+.requests-list, .assignments-list, .members-list, .history-list, .uploads-list {
   list-style: none;
   padding: 0;
   margin: 0;
 }
 
-.invite-item, .assignment-item, .member-item, .history-item, .upload-item {
+.request-item, .assignment-item, .member-item, .history-item, .upload-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -283,7 +283,7 @@ body.dark-mode .action-button:hover {
   border-bottom: 1px solid rgba(224, 201, 127, 0.3);
 }
 
-body.dark-mode .invite-item, 
+body.dark-mode .request-item, 
 body.dark-mode .assignment-item, 
 body.dark-mode .member-item, 
 body.dark-mode .history-item, 
@@ -396,6 +396,91 @@ body.dark-mode .select-prompt p {
 /* Tab content specifics */
 .invitations-tab, .assign-tab, .members-tab, .history-tab, .uploads-tab {
   padding: 0.5rem;
+}
+
+.request-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.small-action.accept {
+  background-color: #28a745;
+  color: white;
+}
+
+.small-action.accept:hover {
+  background-color: #218838;
+}
+
+.small-action.reject {
+  background-color: #dc3545;
+  color: white;
+}
+
+.small-action.reject:hover {
+  background-color: #c82333;
+}
+
+.requests-list {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0;
+}
+
+.request-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #ccc;
+}
+
+.request-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+textarea {
+  width: 100%;
+  padding: 0.8rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  resize: vertical;
+}
+
+.action-button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 0.8rem 1.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.action-button:hover {
+  background-color: #0056b3;
+}
+
+.members-list {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0;
+}
+
+.member-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #ccc;
+}
+
+.member-role select {
+  margin-left: 0.5rem;
+  padding: 0.3rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
 }
 
 /* Responsive design */

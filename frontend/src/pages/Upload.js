@@ -1,31 +1,71 @@
 import React, { useState } from 'react';
+import { uploadFile } from '../services/api';
+import pdfThumbnail from '../assets/thumbnail.png'; // Placeholder for PDF thumbnail
 import './upload.css';
 
 const Upload = () => {
   const [file, setFile] = useState(null);
+  const [filePreview, setFilePreview] = useState(null); // For file thumbnail
   const [tags, setTags] = useState('');
-  const [visibility, setVisibility] = useState('private'); // Changed default to private
+  const [visibility, setVisibility] = useState('private'); // Default to private
   const [organizationName, setOrganizationName] = useState('');
   const [reviewerAssignment, setReviewerAssignment] = useState('manual');
-  const [reviewerId, setReviewerId] = useState('');
+  const [reviewers, setReviewers] = useState([]); // Store multiple reviewer IDs
+  const [currentReviewer, setCurrentReviewer] = useState(''); // Temporary input for a single reviewer
+  const [error, setError] = useState('');
+  const token = localStorage.getItem('token'); // Retrieve token from localStorage
 
   const handleFileChange = (e) => {
-    setFile(e.target.files[0]);
+    const selectedFile = e.target.files[0];
+    setFile(selectedFile);  
+
+    // Generate a preview for image or PDF files
+    if (selectedFile) {
+      if (selectedFile.type.startsWith('image/')) {
+        // For image files, use a URL object
+        setFilePreview(URL.createObjectURL(selectedFile));
+      } else if (selectedFile.type === 'application/pdf') {
+        // For PDF files, use a placeholder thumbnail or a PDF icon
+        setFilePreview(pdfThumbnail); // Replace with your PDF thumbnail image
+      } else {
+        setFilePreview(null); // No preview for unsupported file types
+      }
+    }
   };
 
-  const handleSubmit = (e) => {
+  const addReviewer = () => {
+    if (currentReviewer.trim() !== '') {
+      setReviewers([...reviewers, currentReviewer.trim()]);
+      setCurrentReviewer(''); // Clear the input field
+    }
+  };
+
+  const removeReviewer = (index) => {
+    const updatedReviewers = reviewers.filter((_, i) => i !== index);
+    setReviewers(updatedReviewers);
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('File uploaded:', file);
-    console.log('Tags:', tags);
-    console.log('Visibility:', visibility);
-    if (visibility === 'organization') {
-      console.log('Organization Name:', organizationName);
-    } else {
-      // Only log reviewer info if not organization visibility
-      console.log('Reviewer Assignment:', reviewerAssignment);
-      if (reviewerAssignment === 'manual') {
-        console.log('Reviewer ID:', reviewerId);
-      }
+    try {
+      const response = await uploadFile(
+        token,
+        file,
+        tags,
+        visibility,
+        organizationName,
+        reviewers // Send the reviewers array
+      );
+      alert('File uploaded successfully!');
+      console.log('Response:', response);
+      setFile(null);
+      setFilePreview(null); // Clear the preview after upload
+      setTags('');
+      setVisibility('private');
+      setOrganizationName('');
+      setReviewers([]); // Clear the reviewers list
+    } catch (err) {
+      setError(err.message || 'Failed to upload file');
     }
   };
 
@@ -36,8 +76,7 @@ const Upload = () => {
         <h2 className="upload-title">Document Upload</h2>
         <form className="upload-form" onSubmit={handleSubmit}>
           <div className="form-group">
-            <label htmlFor="file">Upload or Drag New Document (PDF, DOCX)</label>
-            <div className="upload-drag-box">
+            <label htmlFor="file" className="upload-drag-box">
               <input
                 type="file"
                 id="file"
@@ -45,8 +84,15 @@ const Upload = () => {
                 onChange={handleFileChange}
                 required
               />
-              <p>Drag and drop your file here or click to upload</p>
-            </div>
+              {filePreview ? (
+                <div className="file-preview">
+                  <img src={filePreview} alt="File Preview" className="thumbnail" />
+                  <p className="file-name">{file?.name}</p>
+                </div>
+              ) : (
+                <p>Drag and drop your file here or click to upload</p>
+              )}
+            </label>
           </div>
           <div className="form-group">
             <label htmlFor="tags">Add Tags or Expertise Areas</label>
@@ -72,7 +118,6 @@ const Upload = () => {
               value={visibility}
               onChange={(e) => setVisibility(e.target.value)}
             >
-              {/* Removed the public option */}
               <option value="private">Private</option>
               <option value="organization">Organization</option>
             </select>
@@ -90,7 +135,7 @@ const Upload = () => {
               />
             </div>
           )}
-          
+
           {/* Only show reviewer assignment if visibility is not organization */}
           {visibility !== 'organization' && (
             <>
@@ -107,20 +152,38 @@ const Upload = () => {
               </div>
               {reviewerAssignment === 'manual' && (
                 <div className="form-group">
-                  <label htmlFor="reviewerId">Reviewer ID</label>
-                  <input
-                    type="text"
-                    id="reviewerId"
-                    value={reviewerId}
-                    onChange={(e) => setReviewerId(e.target.value)}
-                    placeholder="Enter reviewer ID"
-                    required
-                  />
+                  <label htmlFor="reviewerId">Reviewer IDs</label>
+                  <div className="reviewer-input">
+                    <input
+                      type="text"
+                      id="reviewerId"
+                      value={currentReviewer}
+                      onChange={(e) => setCurrentReviewer(e.target.value)}
+                      placeholder="Enter reviewer ID"
+                    />
+                    <button type="button" onClick={addReviewer} className="add-reviewer-button">
+                      Add
+                    </button>
+                  </div>
+                  <ul className="reviewer-list">
+                    {reviewers.map((reviewer, index) => (
+                      <li key={index} className="reviewer-item">
+                        {reviewer}
+                        <button
+                          type="button"
+                          onClick={() => removeReviewer(index)}
+                          className="remove-reviewer-button"
+                        >
+                          Remove
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               )}
             </>
           )}
-          
+
           <button type="submit" className="upload-button">
             Upload
           </button>

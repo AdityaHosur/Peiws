@@ -5,10 +5,10 @@ const organizationSchema = new mongoose.Schema({
   description: { type: String },
   admin: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   members: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
-  joinRequests: [
+  pendingRequests: [
     {
-      user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-      requestedAt: { type: Date, default: Date.now },
+      email: { type: String, required: true },
+      role: { type: String, default: 'Member' }, // Default role is Member
     },
   ],
 });

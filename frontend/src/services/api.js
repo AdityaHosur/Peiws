@@ -94,3 +94,83 @@ export const createOrganization = async (token, name, description) => {
     throw error.response?.data || { message: 'An error occurred' };
   }
 };
+
+// Handle invitations
+export const handleInvitation = async (token, organizationId, email, action) => {
+  try {
+    const response = await axios.post(
+      `${API_BASE_URL}/organization/invitation`,
+      { organizationId, email, action },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: 'An error occurred' };
+  }
+};
+
+// Invite users to an organization
+export const inviteUsersToOrganization = async (token, organizationId, emails) => {
+  try {
+    const response = await axios.post(
+      `${API_BASE_URL}/organization/invite`,
+      { organizationId, emails },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: 'An error occurred' };
+  }
+};
+
+// Upload a file
+export const uploadFile = async (token, file, tags, visibility, organizationName, reviewers) => {
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('tags', tags);
+    formData.append('visibility', visibility);
+    if (visibility === 'organization') {
+      formData.append('organizationName', organizationName);
+    } else {
+      formData.append('reviewers',JSON.stringify(reviewers || []));
+    }
+
+    const response = await axios.post(`${API_BASE_URL}/file/upload`, formData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: 'An error occurred' };
+  }
+};
+
+// Fetch members of an organization
+export const getOrganizationMembers = async (token, organizationId) => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/organization/${organizationId}/members`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: 'An error occurred' };
+  }
+};
+
+// Update a member's role
+export const updateMemberRole = async (token, organizationId, memberId, role) => {
+  try {
+    const response = await axios.put(
+      `${API_BASE_URL}/organization/${organizationId}/members/${memberId}/role`,
+      { role },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: 'An error occurred' };
+  }
+};
