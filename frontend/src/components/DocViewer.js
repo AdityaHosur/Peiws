@@ -6,6 +6,15 @@ import 'react-pdf/dist/esm/Page/TextLayer.css';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import './DocViewer.css';
 
+  // Add these near the top, after imports
+const saveAnnotations = (annotations) => {
+  localStorage.setItem('pdf_annotations', JSON.stringify(annotations));
+};
+
+const loadAnnotations = () => {
+  const saved = localStorage.getItem('pdf_annotations');
+  return saved ? JSON.parse(saved) : {};
+};
 // Configure PDF.js worker
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
@@ -20,75 +29,147 @@ const DocViewer = ({ fileUrl }) => {
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
   const [isDrawing, setIsDrawing] = useState(false);
-  const [annotations, setAnnotations] = useState([]);
+  const [documentId, setDocumentId] = useState(fileUrl);
+  const [annotations, setAnnotations] = useState(loadAnnotations());
 
-  // Add a new useEffect to handle annotation scaling
+  
+  // Add this useEffect after other useEffects
+useEffect(() => {
+  saveAnnotations(annotations);
+}, [annotations]);
+
 // Add this after your other useEffect hooks
 useEffect(() => {
   const reapplyAnnotations = () => {
     const pageElement = document.querySelector('.react-pdf__Page');
     const textLayer = pageElement?.querySelector('.react-pdf__Page__textContent');
 
-    if (!textLayer || annotations.length === 0) return;
+    if (!textLayer) return;
+
+    // Get annotations for current document and page
+    const currentAnnotations = annotations[documentId]?.[pageNumber] || [];
 
     // Clear existing annotations
     const existingAnnotations = textLayer.querySelectorAll('.pdf-annotation');
     existingAnnotations.forEach(annotation => annotation.remove());
 
-    // Apply annotations with debouncing
-    const applyAnnotations = () => {
-      annotations.forEach(annotation => {
-        if (annotation.pageNumber === pageNumber) {
-          annotation.position.forEach(pos => {
-            const overlay = document.createElement('div');
-            overlay.className = `pdf-annotation ${annotation.type}`;
+    // Delay applying annotations slightly to ensure PDF is rendered
+    setTimeout(() => {
+      // Apply annotations
+      currentAnnotations.forEach(annotation => {
+        annotation.position.forEach(pos => {
+          const overlay = document.createElement('div');
+          overlay.className = `pdf-annotation ${annotation.type}`;
+          overlay.dataset.documentId = documentId;
+          overlay.dataset.pageNumber = pageNumber;
 
-            const scaledPos = {
-              left: pos.left * scale,
-              top: pos.top * scale,
-              width: pos.width * scale,
-              height: pos.height * scale
-            };
+          const scaledPos = {
+            left: pos.left * scale,
+            top: pos.top * scale,
+            width: pos.width * scale,
+            height: pos.height * scale
+          };
 
-            if (annotation.type === 'highlight') {
-              Object.assign(overlay.style, {
-                position: 'absolute',
-                left: `${scaledPos.left}px`,
-                top: `${scaledPos.top}px`,
-                width: `${scaledPos.width}px`,
-                height: `${scaledPos.height}px`,
-                backgroundColor: annotation.color,
-                opacity: 0.4,
-                pointerEvents: 'none'
-              });
-            } else {
-              Object.assign(overlay.style, {
-                position: 'absolute',
-                left: `${scaledPos.left}px`,
-                top: annotation.type === 'strikethrough' 
-                  ? `${scaledPos.top + (scaledPos.height / 2)}px` 
-                  : `${scaledPos.top + scaledPos.height - 2}px`,
-                width: `${scaledPos.width}px`,
-                height: '2px',
-                backgroundColor: '#000',
-                pointerEvents: 'none'
-              });
-            }
+          if (annotation.type === 'highlight') {
+            Object.assign(overlay.style, {
+              position: 'absolute',
+              left: `${scaledPos.left}px`,
+              top: `${scaledPos.top}px`,
+              width: `${scaledPos.width}px`,
+              height: `${scaledPos.height}px`,
+              backgroundColor: annotation.color,
+              opacity: 0.4,
+              pointerEvents: 'none'
+            });
+          } else {
+            Object.assign(overlay.style, {
+              position: 'absolute',
+              left: `${scaledPos.left}px`,
+              top: annotation.type === 'strikethrough' 
+                ? `${scaledPos.top + (scaledPos.height / 2)}px` 
+                : `${scaledPos.top + scaledPos.height - 2}px`,
+              width: `${scaledPos.width}px`,
+              height: '2px',
+              backgroundColor: '#000',
+              pointerEvents: 'none'
+            });
+          }
 
-            textLayer.appendChild(overlay);
-          });
-        }
+          textLayer.appendChild(overlay);
+        });
       });
-    };
-
-    // Use requestAnimationFrame for smooth rendering
-    requestAnimationFrame(applyAnnotations);
+    }, 100); // Small delay to ensure PDF rendering is complete
   };
 
-  // Add a small delay to ensure PDF is rendered
-  const timeoutId = setTimeout(reapplyAnnotations, 100);
+  // Use requestAnimationFrame for smoother rendering
+  requestAnimationFrame(reapplyAnnotations);
+
+}, [scale, annotations, pageNumber, documentId]);
+
+// Add this new useEffect to handle page changes
+useEffect(() => {
+  const applyPageAnnotations = () => {
+    const pageElement = document.querySelector('.react-pdf__Page');
+    const textLayer = pageElement?.querySelector('.react-pdf__Page__textContent');
+
+    if (!textLayer) return;
+
+    // Get annotations for current document and page
+    const currentAnnotations = annotations[documentId]?.[pageNumber] || [];
+
+    // Clear existing annotations
+    const existingAnnotations = textLayer.querySelectorAll('.pdf-annotation');
+    existingAnnotations.forEach(annotation => annotation.remove());
+
+    // Apply annotations for the current page
+    currentAnnotations.forEach(annotation => {
+      annotation.position.forEach(pos => {
+        const overlay = document.createElement('div');
+        overlay.className = `pdf-annotation ${annotation.type}`;
+        overlay.dataset.documentId = documentId;
+        overlay.dataset.pageNumber = pageNumber;
+
+        const scaledPos = {
+          left: pos.left * scale,
+          top: pos.top * scale,
+          width: pos.width * scale,
+          height: pos.height * scale
+        };
+
+        if (annotation.type === 'highlight') {
+          Object.assign(overlay.style, {
+            position: 'absolute',
+            left: `${scaledPos.left}px`,
+            top: `${scaledPos.top}px`,
+            width: `${scaledPos.width}px`,
+            height: `${scaledPos.height}px`,
+            backgroundColor: annotation.color,
+            opacity: 0.4,
+            pointerEvents: 'none'
+          });
+        } else {
+          Object.assign(overlay.style, {
+            position: 'absolute',
+            left: `${scaledPos.left}px`,
+            top: annotation.type === 'strikethrough' 
+              ? `${scaledPos.top + (scaledPos.height / 2)}px` 
+              : `${scaledPos.top + scaledPos.height - 2}px`,
+            width: `${scaledPos.width}px`,
+            height: '2px',
+            backgroundColor: '#000',
+            pointerEvents: 'none'
+          });
+        }
+
+        textLayer.appendChild(overlay);
+      });
+    });
+  };
+
+  // Wait for the page to render before applying annotations
+  const timeoutId = setTimeout(applyPageAnnotations, 100);
   return () => clearTimeout(timeoutId);
-}, [scale, annotations, pageNumber]);
+}, [pageNumber]); // Only run when page number changes
 
   const handleToolSelect = (tool) => {
     setSelectedTool(tool);
@@ -146,17 +227,28 @@ const handleTextSelection = () => {
       height: rect.height / scale,
     }));
 
-    // Save annotation with unscaled positions
-    setAnnotations(prev => [
-      ...prev,
-      {
-        type: selectedTool,
-        color: highlightColor,
-        pageNumber,
-        content: text,
-        position: positions,
-      },
-    ]);
+    const newAnnotation = {
+      type: selectedTool,
+      color: highlightColor,
+      content: text,
+      position: positions,
+      timestamp: Date.now(),
+    };
+
+    setAnnotations(prev => {
+      const updated = {
+        ...prev,
+        [documentId]: {
+          ...prev[documentId],
+          [pageNumber]: [
+            ...(prev[documentId]?.[pageNumber] || []),
+            newAnnotation
+          ]
+        }
+      };
+      saveAnnotations(updated);
+      return updated;
+    });
 
     selection.removeAllRanges();
   } catch (error) {
@@ -164,13 +256,89 @@ const handleTextSelection = () => {
   }
 };
 
+// Add this useEffect to handle document switching
+useEffect(() => {
+  setDocumentId(fileUrl);
+  // Force annotation reapplication after document change
+  const timeoutId = setTimeout(() => {
+    const pageElement = document.querySelector('.react-pdf__Page');
+    const textLayer = pageElement?.querySelector('.react-pdf__Page__textContent');
+
+    if (textLayer) {
+      const currentAnnotations = annotations[fileUrl]?.[pageNumber] || [];
+      
+      // Clear existing annotations
+      const existingAnnotations = textLayer.querySelectorAll('.pdf-annotation');
+      existingAnnotations.forEach(annotation => annotation.remove());
+
+      // Apply annotations for the new document
+      currentAnnotations.forEach(annotation => {
+        annotation.position.forEach(pos => {
+          const overlay = document.createElement('div');
+          overlay.className = `pdf-annotation ${annotation.type}`;
+          overlay.dataset.documentId = fileUrl;
+          overlay.dataset.pageNumber = pageNumber;
+
+          const scaledPos = {
+            left: pos.left * scale,
+            top: pos.top * scale,
+            width: pos.width * scale,
+            height: pos.height * scale
+          };
+
+          if (annotation.type === 'highlight') {
+            Object.assign(overlay.style, {
+              position: 'absolute',
+              left: `${scaledPos.left}px`,
+              top: `${scaledPos.top}px`,
+              width: `${scaledPos.width}px`,
+              height: `${scaledPos.height}px`,
+              backgroundColor: annotation.color,
+              opacity: 0.4,
+              pointerEvents: 'none'
+            });
+          } else {
+            Object.assign(overlay.style, {
+              position: 'absolute',
+              left: `${scaledPos.left}px`,
+              top: annotation.type === 'strikethrough' 
+                ? `${scaledPos.top + (scaledPos.height / 2)}px` 
+                : `${scaledPos.top + scaledPos.height - 2}px`,
+              width: `${scaledPos.width}px`,
+              height: '2px',
+              backgroundColor: '#000',
+              pointerEvents: 'none'
+            });
+          }
+
+          textLayer.appendChild(overlay);
+        });
+      });
+    }
+  }, 500); // Longer delay for document switching
+
+  return () => clearTimeout(timeoutId);
+}, [fileUrl]);
+
+// Update the Document component to include onLoadComplete
+
   const onDocumentLoadSuccess = ({ numPages }) => {
     setNumPages(numPages);
   };
 
   const changePage = (offset) => {
-    setPageNumber(prevPageNumber => prevPageNumber + offset);
-  };
+  setPageNumber(prevPageNumber => {
+    const newPageNumber = prevPageNumber + offset;
+    // Force annotation reapplication after page change
+    requestAnimationFrame(() => {
+      const event = new CustomEvent('pagechanged', {
+        detail: { pageNumber: newPageNumber, documentId }
+      });
+      document.dispatchEvent(event);
+    });
+    return newPageNumber;
+  });
+};
 
   const previousPage = () => {
     if (pageNumber > 1) {
@@ -232,6 +400,13 @@ const handleTextSelection = () => {
           onLoadSuccess={onDocumentLoadSuccess}
           loading={<div>Loading PDF...</div>}
           error={<div>Error loading PDF!</div>}
+          onLoadComplete={() => {
+          // Force annotation reapplication after document loads
+          requestAnimationFrame(() => {
+            const event = new Event('documentloaded');
+            document.dispatchEvent(event);
+          });
+        }}
         >
           <div onMouseUp={handleTextSelection}
             style={{position: 'relative'}}>
@@ -245,6 +420,10 @@ const handleTextSelection = () => {
                   const textLayer = document.querySelector('.react-pdf__Page__textContent');
                   if (textLayer) {
                     textLayer.style.transform = 'none';
+                    const event = new CustomEvent('pageloaded', { 
+                      detail: { pageNumber, documentId } 
+                    });
+                    document.dispatchEvent(event);
                   }
                 });
               }}
