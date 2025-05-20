@@ -1,0 +1,9 @@
+.drawing-tool {
+  margin-top: 1rem;
+}
+
+.drawing-canvas {
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: crosshair;
+}

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { getAssignedReviews,getFileStreamUrl } from '../services/api';
+import { getAssignedReviews, getFileStreamUrl } from '../services/api';
+import DocViewer from '../components/DocViewer';
 import './review.css';
 
 const Review = () => {
@@ -49,14 +50,7 @@ const Review = () => {
         {selectedReview ? (
           <div>
             <h3 className="content-title">Review: {selectedReview.fileId.filename}</h3>
-            {/* Display the file */}
-            <iframe
-              src={getFileStreamUrl(selectedReview.fileId.fileId)}
-              title="File Preview"
-              width="100%"
-              height="430px"
-              style={{ border: 'none'}}
-            ></iframe>
+            <DocViewer fileUrl={getFileStreamUrl(selectedReview.fileId.fileId)} />
           </div>
         ) : (
           <p>Select a document to view details</p>

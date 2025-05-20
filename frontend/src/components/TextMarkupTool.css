@@ -1,0 +1,17 @@
+.text-markup-tool {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.markup-button {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.markup-button:hover {
+  background-color: #218838;
+}
