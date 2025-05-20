@@ -7,6 +7,8 @@ const AnnotationTools = ({ onToolSelect, selectedTool, highlightColor, onColorCh
     { id: 'strikethrough', label: 'Strikethrough', icon: '🚫' },
     { id: 'underline', label: 'Underline', icon: '_' },
     { id: 'draw', label: 'Draw', icon: '✏️' },
+    { id: 'comment', icon: '💬', tooltip: 'Add Comment' },
+  { id: 'sticky', icon: '📝', tooltip: 'Add Sticky Note' }
   ];
 
   return (

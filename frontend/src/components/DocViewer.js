@@ -2,6 +2,8 @@ import React, { useState,useRef,useEffect } from 'react';
 import { Document, Page } from 'react-pdf';
 import { pdfjs } from 'react-pdf';
 import AnnotationTools from './AnnotationTools';
+import CommentMarker from './CommentMarker';
+import StickyNote from './StickyNote';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import './DocViewer.css';
@@ -15,6 +17,25 @@ const loadAnnotations = () => {
   const saved = localStorage.getItem('pdf_annotations');
   return saved ? JSON.parse(saved) : {};
 };
+
+const saveStickyNotes = (notes) => {
+  localStorage.setItem('pdf_sticky_notes', JSON.stringify(notes));
+};
+
+const loadStickyNotes = () => {
+  const saved = localStorage.getItem('pdf_sticky_notes');
+  return saved ? JSON.parse(saved) : {};
+};
+
+const saveComments = (comments) => {
+  localStorage.setItem('pdf_comments', JSON.stringify(comments));
+};
+
+const loadComments = () => {
+  const saved = localStorage.getItem('pdf_comments');
+  return saved ? JSON.parse(saved) : {};
+};
+
 // Configure PDF.js worker
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
@@ -31,12 +52,22 @@ const DocViewer = ({ fileUrl }) => {
   const [isDrawing, setIsDrawing] = useState(false);
   const [documentId, setDocumentId] = useState(fileUrl);
   const [annotations, setAnnotations] = useState(loadAnnotations());
+  const [comments, setComments] = useState(loadComments());
+  const [stickyNotes, setStickyNotes] = useState(loadStickyNotes());
 
   
   // Add this useEffect after other useEffects
 useEffect(() => {
   saveAnnotations(annotations);
 }, [annotations]);
+
+useEffect(() => {
+  saveStickyNotes(stickyNotes);
+}, [stickyNotes]);
+
+useEffect(() => {
+  saveComments(comments);
+}, [comments]);
 
 // Add this after your other useEffect hooks
 useEffect(() => {
@@ -176,35 +207,42 @@ useEffect(() => {
   };
 
   const handleMouseDown = (e) => {
-    if (selectedTool === 'draw') {
-      setIsDrawing(true);
-      const canvas = canvasRef.current;
-      const ctx = canvas.getContext('2d');
-      const rect = canvas.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      
-      ctx.beginPath();
-      ctx.moveTo(x, y);
-    }
-  };
+  if (selectedTool === 'draw') {
+    setIsDrawing(true);
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    const rect = canvas.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / scale;
+    const y = (e.clientY - rect.top) / scale;
+    
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.stroke();
+  }
+};
 
-  const handleMouseMove = (e) => {
-    if (selectedTool === 'draw' && isDrawing) {
-      const canvas = canvasRef.current;
-      const ctx = canvas.getContext('2d');
-      const rect = canvas.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      
-      ctx.lineTo(x, y);
-      ctx.stroke();
-    }
-  };
+const handleMouseMove = (e) => {
+  if (selectedTool === 'draw' && isDrawing) {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    const rect = canvas.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / scale;
+    const y = (e.clientY - rect.top) / scale;
+    
+    ctx.lineTo(x, y);
+    ctx.stroke();
+  }
+};
 
-  const handleMouseUp = () => {
+const handleMouseUp = () => {
+  if (selectedTool === 'draw' && isDrawing) {
     setIsDrawing(false);
-  };
+    // Save the drawing if needed
+    const canvas = canvasRef.current;
+    const imageData = canvas.toDataURL();
+    // Add drawing to annotations if needed
+  }
+};
 
 const handleTextSelection = () => {
   if (!selectedTool || selectedTool === 'draw') return;
@@ -340,6 +378,25 @@ useEffect(() => {
   });
 };
 
+// Add after your existing useEffects
+useEffect(() => {
+  if (canvasRef.current && containerRef.current) {
+    const pageElement = document.querySelector('.react-pdf__Page');
+    if (pageElement) {
+      const { width, height } = pageElement.getBoundingClientRect();
+      canvasRef.current.width = width;
+      canvasRef.current.height = height;
+      canvasRef.current.style.width = `${width}px`;
+      canvasRef.current.style.height = `${height}px`;
+      
+      const ctx = canvasRef.current.getContext('2d');
+      ctx.strokeStyle = '#000000';
+      ctx.lineWidth = 2;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+    }
+  }
+}, [numPages, scale]); // Reinitialize when page count or scale changes
   const previousPage = () => {
     if (pageNumber > 1) {
       changePage(-1);
@@ -359,6 +416,71 @@ useEffect(() => {
   const zoomOut = () => {
     setScale(prevScale => Math.max(0.5, prevScale - 0.1));
   };
+
+const handleAddComment = (position) => {
+  const newComment = {
+    id: Date.now(),
+    text: '',
+    position,
+    pageNumber,
+    documentId,
+  };
+  
+  setComments(prev => ({
+    ...prev,
+    [documentId]: {
+      ...prev[documentId],
+      [pageNumber]: [
+        ...(prev[documentId]?.[pageNumber] || []),
+        newComment
+      ]
+    }
+  }));
+};
+
+const handleAddStickyNote = (position) => {
+  const newNote = {
+    id: Date.now(),
+    text: '',
+    position,
+    pageNumber,
+    documentId,
+  };
+  
+  setStickyNotes(prev => ({
+    ...prev,
+    [documentId]: {
+      ...prev[documentId],
+      [pageNumber]: [
+        ...(prev[documentId]?.[pageNumber] || []),
+        newNote
+      ]
+    }
+  }));
+};
+
+const handleDocumentClick = (e) => {
+  if (selectedTool === 'comment') {
+    const container = e.currentTarget;
+    const rect = container.getBoundingClientRect();
+    const position = {
+      left: (e.clientX - rect.left) / scale,
+      top: (e.clientY - rect.top) / scale
+    };
+    handleAddComment(position);
+    setSelectedTool(null); // Reset tool after adding
+  }
+  else if (selectedTool === 'sticky') {
+    const container = e.currentTarget;
+    const rect = container.getBoundingClientRect();
+    const position = {
+      x: (e.clientX - rect.left) / scale,
+      y: (e.clientY - rect.top) / scale
+    };
+    handleAddStickyNote(position);
+    setSelectedTool(null);
+  }
+};
 
   return (
     <div className="doc-viewer" ref={containerRef}>
@@ -383,7 +505,7 @@ useEffect(() => {
         <button onClick={zoomIn}>+</button>
       </div>
 
-      <div className="pdf-container">
+      <div className="pdf-container" onClick={handleDocumentClick} style={{ position: 'relative' }}>
           <canvas
           ref={canvasRef}
           className="annotation-canvas"
@@ -392,8 +514,14 @@ useEffect(() => {
             top: 0,
             left: 0,
             pointerEvents: selectedTool === 'draw' ? 'auto' : 'none',
-            zIndex: 3
+            zIndex: 3,
+            transform: `scale(${scale})`,
+            transformOrigin: '0 0'
           }}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp}
         />
         <Document
           file={fileUrl}
@@ -430,6 +558,53 @@ useEffect(() => {
             />
           </div>
         </Document>
+        {(comments[documentId]?.[pageNumber] || []).map(comment => (
+            <CommentMarker
+              key={comment.id}
+              comment={comment}
+              position={comment.position}
+              scale={scale}
+              onDelete={(id) => {
+                setComments(prev => {
+                  const updated = {...prev};
+                  updated[documentId][pageNumber] = updated[documentId][pageNumber]
+                    .filter(c => c.id !== id);
+                  return updated;
+                });
+              }}
+              onUpdate={(updated) => {
+                setComments(prev => {
+                  const comments = {...prev};
+                  comments[documentId][pageNumber] = comments[documentId][pageNumber]
+                    .map(c => c.id === updated.id ? updated : c);
+                  return comments;
+                });
+              }}
+            />
+          ))}
+        {(stickyNotes[documentId]?.[pageNumber] || []).map(note => (
+          <StickyNote
+            key={note.id}
+            note={note}
+            scale={scale}
+            onDelete={(id) => {
+              setStickyNotes(prev => {
+                const updated = {...prev};
+                updated[documentId][pageNumber] = updated[documentId][pageNumber]
+                  .filter(n => n.id !== id);
+                return updated;
+              });
+            }}
+            onUpdate={(updated) => {
+              setStickyNotes(prev => {
+                const notes = {...prev};
+                notes[documentId][pageNumber] = notes[documentId][pageNumber]
+                  .map(n => n.id === updated.id ? updated : n);
+                return notes;
+              });
+            }}
+          />
+        ))}
       </div>
     </div>
   );

@@ -1,0 +1,79 @@
+.sticky-note {
+  position: absolute;
+  z-index: 4;
+  background: #feff9c;
+  padding: 8px;
+  width: 200px; /* Fixed width */
+  height: 200px; /* Fixed height */
+  box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 2px;
+  transform-origin: top left;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* Prevent content from overflowing */
+}
+
+.sticky-content {
+  flex: 1;
+  cursor: text;
+  white-space: pre-wrap; /* Preserve line breaks */
+  word-wrap: break-word; /* Break long words */
+  overflow-y: auto; /* Enable vertical scrolling */
+  overflow-x: hidden; /* Disable horizontal scrolling */
+  padding: 8px;
+  line-height: 1.4;
+  color: #333;
+  font-size: 14px;
+}
+
+.sticky-edit textarea {
+  width: 100%;
+  height: calc(100% - 40px); /* Adjust height to fit within the sticky note */
+  resize: none;
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  padding: 8px;
+  margin: 0;
+  overflow-y: auto; /* Enable vertical scrolling */
+  overflow-x: hidden; /* Disable horizontal scrolling */
+  line-height: 1.4;
+  font-size: 14px;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.sticky-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  cursor: move;
+}
+
+.sticky-header button {
+  background: none;
+  border: none;
+  font-size: 1.2em;
+  cursor: pointer;
+  padding: 0 4px;
+}
+
+.sticky-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.sticky-note.dragging {
+  opacity: 0.8;
+  cursor: move;
+}
+
+.sticky-actions button {
+  padding: 4px 8px;
+  border: 1px solid #ccc;
+  background: #fff;
+  border-radius: 3px;
+  cursor: pointer;
+}

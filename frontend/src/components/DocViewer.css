@@ -60,6 +60,7 @@
   border-radius: 4px;
   overflow: hidden;
   width: 100%;
+  touch-action: none;
 }
 
 .annotation-canvas {
@@ -69,6 +70,7 @@
   pointer-events: none;
   z-index: 3;
   transform-origin: 0 0;
+  touch-action: none;
 }
 
 .pdf-annotation {
