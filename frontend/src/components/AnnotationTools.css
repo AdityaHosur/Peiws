@@ -1,10 +1,18 @@
 .annotation-toolbar {
   display: flex;
-  gap: 0.5rem;
-  padding: 0.5rem;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.5rem 1rem;
   background-color: #f5f5f5;
-  border-radius: 4px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   margin-bottom: 1rem;
+}
+
+.toolbar-section {
+  display: flex;
+  gap: 0.5rem;
 }
 
 .tool-button {
@@ -16,12 +24,22 @@
   border-radius: 4px;
   cursor: pointer;
   background-color: white;
-  transition: background-color 0.2s;
+  transition: background-color 0.2s ease;
+  font-size: 10px;
+  font-weight: bold;
 }
 
 .tool-button.active {
   background-color: #007bff;
   color: white;
+}
+
+.tool-button:hover {
+  background-color: #e0e0e0;
+}
+
+.tool-icon {
+  font-size: 16px;
 }
 
 .color-picker {
@@ -31,8 +49,4 @@
   border: none;
   border-radius: 4px;
   cursor: pointer;
-}
-
-.annotation-canvas {
-  z-index: 1;
 }

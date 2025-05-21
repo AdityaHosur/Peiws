@@ -46,16 +46,166 @@ const DocViewer = ({ fileUrl }) => {
   const [scale, setScale] = useState(1.0);
    const [selectedTool, setSelectedTool] = useState(null);
   const [highlightColor, setHighlightColor] = useState('#ffeb3b');
-  const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
-  const [isDrawing, setIsDrawing] = useState(false);
   const [documentId, setDocumentId] = useState(fileUrl);
   const [annotations, setAnnotations] = useState(loadAnnotations());
   const [comments, setComments] = useState(loadComments());
   const [stickyNotes, setStickyNotes] = useState(loadStickyNotes());
+  const [undoStack, setUndoStack] = useState([]);
+  const [redoStack, setRedoStack] = useState([]);
 
-  
+  const handleUndo = () => {
+  if (undoStack.length > 0) {
+    const lastAction = undoStack[undoStack.length - 1];
+    setUndoStack(undoStack.slice(0, -1));
+    setRedoStack([...redoStack, lastAction]);
+
+    switch (lastAction.type) {
+      case 'add':
+        if (lastAction.tool === 'comment') {
+          setComments(prev => {
+            const updated = {...prev};
+            updated[documentId][pageNumber] = updated[documentId][pageNumber]
+              .filter(c => c.id !== lastAction.comment.id);
+            return updated;
+          });
+        } else if (lastAction.tool === 'sticky') {
+          setStickyNotes(prev => {
+            const updated = {...prev};
+            updated[documentId][pageNumber] = updated[documentId][pageNumber]
+              .filter(n => n.id !== lastAction.sticky.id);
+            return updated;
+          });
+        } else if (['highlight', 'underline', 'strikethrough'].includes(lastAction.tool)) {
+          setAnnotations(prev => {
+            const updated = {...prev};
+            if (!updated[documentId]?.[pageNumber]) return prev;
+            
+            updated[documentId][pageNumber] = updated[documentId][pageNumber]
+              .filter(a => a.timestamp !== lastAction.annotation.timestamp);
+            return updated;
+          });
+        }
+        break;
+      case 'update':
+        if (lastAction.tool === 'comment') {
+          setComments(prev => {
+            const comments = {...prev};
+            comments[documentId][pageNumber] = comments[documentId][pageNumber]
+              .map(c => c.id === lastAction.prevComment.id ? lastAction.prevComment : c);
+            return comments;
+          });
+        } else if (lastAction.tool === 'sticky') {
+          setStickyNotes(prev => {
+            const notes = {...prev};
+            notes[documentId][pageNumber] = notes[documentId][pageNumber]
+              .map(n => n.id === lastAction.prevSticky.id ? lastAction.prevSticky : n);
+            return notes;
+          });
+        }
+        break;
+
+      case 'delete':
+        if (lastAction.tool === 'comment') {
+          setComments(prev => ({
+            ...prev,
+            [documentId]: {
+              ...prev[documentId],
+              [pageNumber]: [...prev[documentId][pageNumber], lastAction.comment]
+            }
+          }));
+        } else if (lastAction.tool === 'sticky') {
+          setStickyNotes(prev => ({
+            ...prev,
+            [documentId]: {
+              ...prev[documentId],
+              [pageNumber]: [...prev[documentId][pageNumber], lastAction.sticky]
+            }
+          }));
+        }
+        break;
+    }
+  }
+};
+
+const handleRedo = () => {
+  if (redoStack.length > 0) {
+    const lastAction = redoStack[redoStack.length - 1];
+    setRedoStack(redoStack.slice(0, -1));
+    setUndoStack([...undoStack, lastAction]);
+
+    switch (lastAction.type) {
+      case 'add':
+        if (lastAction.tool === 'comment') {
+          setComments(prev => ({
+            ...prev,
+            [documentId]: {
+              ...prev[documentId],
+              [pageNumber]: [...prev[documentId][pageNumber], lastAction.comment]
+            }
+          }));
+        } else if (lastAction.tool === 'sticky') {
+          setStickyNotes(prev => ({
+            ...prev,
+            [documentId]: {
+              ...prev[documentId],
+              [pageNumber]: [...prev[documentId][pageNumber], lastAction.sticky]
+            }
+          }));
+        } else if (['highlight', 'underline', 'strikethrough'].includes(lastAction.tool)) {
+          setAnnotations(prev => ({
+            ...prev,
+            [documentId]: {
+              ...prev[documentId],
+              [pageNumber]: [
+                ...(prev[documentId]?.[pageNumber] || []),
+                lastAction.annotation
+              ]
+            }
+          }));
+        }
+        break;
+
+      case 'update':
+        if (lastAction.tool === 'comment') {
+          setComments(prev => {
+            const comments = {...prev};
+            comments[documentId][pageNumber] = comments[documentId][pageNumber]
+              .map(c => c.id === lastAction.newComment.id ? lastAction.newComment : c);
+            return comments;
+          });
+        } else if (lastAction.tool === 'sticky') {
+          setStickyNotes(prev => {
+            const notes = {...prev};
+            notes[documentId][pageNumber] = notes[documentId][pageNumber]
+              .map(n => n.id === lastAction.newSticky.id ? lastAction.newSticky : n);
+            return notes;
+          });
+        }
+        break;
+
+      case 'delete':
+        if (lastAction.tool === 'comment') {
+          setComments(prev => {
+            const updated = {...prev};
+            updated[documentId][pageNumber] = updated[documentId][pageNumber]
+              .filter(c => c.id !== lastAction.comment.id);
+            return updated;
+          });
+        } else if (lastAction.tool === 'sticky') {
+          setStickyNotes(prev => {
+            const updated = {...prev};
+            updated[documentId][pageNumber] = updated[documentId][pageNumber]
+              .filter(n => n.id !== lastAction.sticky.id);
+            return updated;
+          });
+        }
+        break;
+    }
+  }
+};
+
   // Add this useEffect after other useEffects
 useEffect(() => {
   saveAnnotations(annotations);
@@ -206,46 +356,9 @@ useEffect(() => {
     setSelectedTool(tool);
   };
 
-  const handleMouseDown = (e) => {
-  if (selectedTool === 'draw') {
-    setIsDrawing(true);
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
-    const rect = canvas.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / scale;
-    const y = (e.clientY - rect.top) / scale;
-    
-    ctx.beginPath();
-    ctx.moveTo(x, y);
-    ctx.stroke();
-  }
-};
-
-const handleMouseMove = (e) => {
-  if (selectedTool === 'draw' && isDrawing) {
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
-    const rect = canvas.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / scale;
-    const y = (e.clientY - rect.top) / scale;
-    
-    ctx.lineTo(x, y);
-    ctx.stroke();
-  }
-};
-
-const handleMouseUp = () => {
-  if (selectedTool === 'draw' && isDrawing) {
-    setIsDrawing(false);
-    // Save the drawing if needed
-    const canvas = canvasRef.current;
-    const imageData = canvas.toDataURL();
-    // Add drawing to annotations if needed
-  }
-};
 
 const handleTextSelection = () => {
-  if (!selectedTool || selectedTool === 'draw') return;
+  if (!selectedTool || ['comment', 'sticky'].includes(selectedTool)) return;
 
   const selection = window.getSelection();
   const text = selection.toString().trim();
@@ -271,22 +384,23 @@ const handleTextSelection = () => {
       content: text,
       position: positions,
       timestamp: Date.now(),
+      pageNumber,
+      documentId
     };
 
-    setAnnotations(prev => {
-      const updated = {
-        ...prev,
-        [documentId]: {
-          ...prev[documentId],
-          [pageNumber]: [
-            ...(prev[documentId]?.[pageNumber] || []),
-            newAnnotation
-          ]
-        }
-      };
-      saveAnnotations(updated);
-      return updated;
-    });
+    setUndoStack([...undoStack, { type: 'add', tool: selectedTool, annotation: newAnnotation }]);
+    setRedoStack([]);
+
+    setAnnotations(prev => ({
+      ...prev,
+      [documentId]: {
+        ...prev[documentId],
+        [pageNumber]: [
+          ...(prev[documentId]?.[pageNumber] || []),
+          newAnnotation
+        ]
+      }
+    }));
 
     selection.removeAllRanges();
   } catch (error) {
@@ -426,17 +540,20 @@ const handleAddComment = (position) => {
     documentId,
   };
   
-  setComments(prev => ({
-    ...prev,
-    [documentId]: {
-      ...prev[documentId],
-      [pageNumber]: [
-        ...(prev[documentId]?.[pageNumber] || []),
-        newComment
-      ]
-    }
-  }));
-};
+  setUndoStack([...undoStack, { type: 'add', tool: 'comment', comment: newComment }]);
+    setRedoStack([]);
+
+    setComments(prev => ({
+      ...prev,
+      [documentId]: {
+        ...prev[documentId],
+        [pageNumber]: [
+          ...(prev[documentId]?.[pageNumber] || []),
+          newComment
+        ]
+      }
+    }));
+  };
 
 const handleAddStickyNote = (position) => {
   const newNote = {
@@ -447,6 +564,9 @@ const handleAddStickyNote = (position) => {
     documentId,
   };
   
+  setUndoStack([...undoStack, { type: 'add', tool: 'sticky', sticky: newNote }]);
+  setRedoStack([]); // Clear redo stack on new action
+
   setStickyNotes(prev => ({
     ...prev,
     [documentId]: {
@@ -489,6 +609,8 @@ const handleDocumentClick = (e) => {
         selectedTool={selectedTool}
         highlightColor={highlightColor}
         onColorChange={setHighlightColor}
+        onUndo={handleUndo}
+        onRedo={handleRedo}
       />
       <div className="pdf-controls">
         <button onClick={previousPage} disabled={pageNumber <= 1}>
@@ -506,23 +628,6 @@ const handleDocumentClick = (e) => {
       </div>
 
       <div className="pdf-container" onClick={handleDocumentClick} style={{ position: 'relative' }}>
-          <canvas
-          ref={canvasRef}
-          className="annotation-canvas"
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            pointerEvents: selectedTool === 'draw' ? 'auto' : 'none',
-            zIndex: 3,
-            transform: `scale(${scale})`,
-            transformOrigin: '0 0'
-          }}
-          onMouseDown={handleMouseDown}
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUp}
-          onMouseLeave={handleMouseUp}
-        />
         <Document
           file={fileUrl}
           onLoadSuccess={onDocumentLoadSuccess}
@@ -559,35 +664,63 @@ const handleDocumentClick = (e) => {
           </div>
         </Document>
         {(comments[documentId]?.[pageNumber] || []).map(comment => (
-            <CommentMarker
-              key={comment.id}
-              comment={comment}
-              position={comment.position}
-              scale={scale}
-              onDelete={(id) => {
-                setComments(prev => {
-                  const updated = {...prev};
-                  updated[documentId][pageNumber] = updated[documentId][pageNumber]
-                    .filter(c => c.id !== id);
-                  return updated;
-                });
-              }}
-              onUpdate={(updated) => {
-                setComments(prev => {
-                  const comments = {...prev};
-                  comments[documentId][pageNumber] = comments[documentId][pageNumber]
-                    .map(c => c.id === updated.id ? updated : c);
-                  return comments;
-                });
-              }}
-            />
-          ))}
+          <CommentMarker
+            key={comment.id}
+            comment={comment}
+            position={comment.position}
+            scale={scale}
+            onDelete={(id) => {
+              // Store the comment before deleting for undo
+              const commentToDelete = comments[documentId][pageNumber].find(c => c.id === id);
+              setUndoStack([...undoStack, { 
+                type: 'delete', 
+                tool: 'comment', 
+                comment: commentToDelete 
+              }]);
+              setRedoStack([]);
+
+              setComments(prev => {
+                const updated = {...prev};
+                updated[documentId][pageNumber] = updated[documentId][pageNumber]
+                  .filter(c => c.id !== id);
+                return updated;
+              });
+            }}
+                      onUpdate={(updated) => {
+              // Store the previous state for undo
+              const prevComment = comments[documentId][pageNumber].find(c => c.id === updated.id);
+              setUndoStack([...undoStack, { 
+                type: 'update', 
+                tool: 'comment', 
+                prevComment,
+                newComment: updated 
+              }]);
+              setRedoStack([]);
+
+              setComments(prev => {
+                const comments = {...prev};
+                comments[documentId][pageNumber] = comments[documentId][pageNumber]
+                  .map(c => c.id === updated.id ? updated : c);
+                return comments;
+              });
+            }}
+          />
+        ))}
         {(stickyNotes[documentId]?.[pageNumber] || []).map(note => (
           <StickyNote
             key={note.id}
             note={note}
             scale={scale}
             onDelete={(id) => {
+              // Store the note before deleting for undo
+              const noteToDelete = stickyNotes[documentId][pageNumber].find(n => n.id === id);
+              setUndoStack([...undoStack, { 
+                type: 'delete', 
+                tool: 'sticky', 
+                sticky: noteToDelete 
+              }]);
+              setRedoStack([]);
+
               setStickyNotes(prev => {
                 const updated = {...prev};
                 updated[documentId][pageNumber] = updated[documentId][pageNumber]
@@ -595,7 +728,17 @@ const handleDocumentClick = (e) => {
                 return updated;
               });
             }}
-            onUpdate={(updated) => {
+                    onUpdate={(updated) => {
+              // Store the previous state for undo
+              const prevNote = stickyNotes[documentId][pageNumber].find(n => n.id === updated.id);
+              setUndoStack([...undoStack, { 
+                type: 'update', 
+                tool: 'sticky', 
+                prevSticky: prevNote,
+                newSticky: updated 
+              }]);
+              setRedoStack([]);
+
               setStickyNotes(prev => {
                 const notes = {...prev};
                 notes[documentId][pageNumber] = notes[documentId][pageNumber]
@@ -608,6 +751,6 @@ const handleDocumentClick = (e) => {
       </div>
     </div>
   );
-};
+}
 
 export default DocViewer;

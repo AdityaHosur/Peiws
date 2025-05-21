@@ -1,35 +1,46 @@
 import React from 'react';
 import './AnnotationTools.css';
 
-const AnnotationTools = ({ onToolSelect, selectedTool, highlightColor, onColorChange }) => {
+const AnnotationTools = ({ onToolSelect, selectedTool, highlightColor, onColorChange, onUndo, onRedo }) => {
   const tools = [
     { id: 'highlight', label: 'Highlight', icon: '🖍️' },
     { id: 'strikethrough', label: 'Strikethrough', icon: '🚫' },
     { id: 'underline', label: 'Underline', icon: '_' },
-    { id: 'draw', label: 'Draw', icon: '✏️' },
-    { id: 'comment', icon: '💬', tooltip: 'Add Comment' },
-  { id: 'sticky', icon: '📝', tooltip: 'Add Sticky Note' }
+    { id: 'comment', label: 'Comment', icon: '💬' },
+    { id: 'sticky', label: 'Sticky Note', icon: '📝' },
   ];
 
   return (
     <div className="annotation-toolbar">
-      {tools.map(tool => (
-        <button
-          key={tool.id}
-          className={`tool-button ${selectedTool === tool.id ? 'active' : ''}`}
-          onClick={() => onToolSelect(tool.id)}
-        >
-          <span className="tool-icon">{tool.icon}</span>
-          {tool.label}
+      <div className="toolbar-section">
+        {tools.map(tool => (
+          <button
+            key={tool.id}
+            className={`tool-button ${selectedTool === tool.id ? 'active' : ''}`}
+            onClick={() => onToolSelect(tool.id)}
+          >
+            <span className="tool-icon">{tool.icon}</span>
+            {tool.label}
+          </button>
+        ))}
+      </div>
+      <div className="toolbar-section">
+        <button className="tool-button" onClick={onUndo}>
+          <span className="tool-icon">↺</span> Undo
         </button>
-      ))}
+        <button className="tool-button" onClick={onRedo}>
+          <span className="tool-icon">↻</span> Redo
+        </button>
+      </div>
       {selectedTool === 'highlight' && (
-        <input
-          type="color"
-          value={highlightColor}
-          onChange={(e) => onColorChange(e.target.value)}
-          className="color-picker"
-        />
+        <div className="toolbar-section">
+          <input
+            type="color"
+            value={highlightColor}
+            onChange={(e) => onColorChange(e.target.value)}
+            className="color-picker"
+          />
+        </div>
       )}
     </div>
   );
