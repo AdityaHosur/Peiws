@@ -2,65 +2,112 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 1rem;
-  padding: 0.5rem 1rem;
-  background-color: #f5f5f5;
+  padding: 10px;
+  background-color: #f8f9fa;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  margin-bottom: 1rem;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
 }
 
 .toolbar-section {
   display: flex;
-  gap: 0.5rem;
+  gap: 8px;
+  align-items: center;
+}
+
+.tools {
+  flex: 3;
+}
+
+.actions {
+  flex: 2;
+  justify-content: flex-end;
 }
 
 .tool-button {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
+  gap: 6px;
+  padding: 8px 12px;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
   background-color: white;
-  transition: background-color 0.2s ease;
-  font-size: 10px;
-  font-weight: bold;
+  color: #212529;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+}
+
+.tool-button:hover:not(:disabled) {
+  background-color: #e9ecef;
 }
 
 .tool-button.active {
   background-color: #007bff;
   color: white;
+  border-color: #007bff;
 }
 
-.tool-button:hover {
-  background-color: #e0e0e0;
+.tool-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .tool-icon {
   font-size: 16px;
 }
 
+.save-button {
+  background-color: #28a745;
+  color: white;
+  border-color: #28a745;
+}
+
+.save-button:hover:not(:disabled) {
+  background-color: #218838;
+}
+
+.undo-button, .redo-button {
+  background-color: #6c757d;
+  color: white;
+  border-color: #6c757d;
+}
+
+.undo-button:hover:not(:disabled), .redo-button:hover:not(:disabled) {
+  background-color: #5a6268;
+}
+
 .color-picker {
-  padding: 0;
-  width: 40px;
-  height: 40px;
+  width: 30px;
+  height: 30px;
   border: none;
+  padding: 0;
   border-radius: 4px;
   cursor: pointer;
 }
 
-.save-button {
-  background-color: #4CAF50 !important;
-  color: white !important;
+.color-label {
+  font-size: 14px;
+  color: #6c757d;
 }
 
-.save-button:hover:not(:disabled) {
-  background-color: #45a049 !important;
-}
-
-.save-button:disabled {
-  background-color: #cccccc !important;
-  cursor: not-allowed;
+@media (max-width: 768px) {
+  .annotation-toolbar {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .toolbar-section {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .tool-label {
+    display: none;
+  }
+  
+  .tool-button {
+    padding: 8px;
+  }
 }

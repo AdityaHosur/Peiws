@@ -1,18 +1,29 @@
 import React from 'react';
 import './AnnotationTools.css';
 
-const AnnotationTools = ({ onToolSelect, selectedTool, highlightColor, onColorChange, onUndo, onRedo,onSave,isSaving }) => {
+const AnnotationTools = ({ 
+  onToolSelect, 
+  selectedTool, 
+  highlightColor, 
+  onColorChange, 
+  onUndo, 
+  onRedo,
+  onSave,
+  isSaving,
+  canUndo,
+  canRedo 
+}) => {
   const tools = [
     { id: 'highlight', label: 'Highlight', icon: '🖍️' },
+    { id: 'underline', label: 'Underline', icon: '＿' },
     { id: 'strikethrough', label: 'Strikethrough', icon: '🚫' },
-    { id: 'underline', label: 'Underline', icon: '_' },
     { id: 'comment', label: 'Comment', icon: '💬' },
-    { id: 'sticky', label: 'Sticky Note', icon: '📝' },
+    { id: 'sticky', label: 'Sticky Note', icon: '📝' }
   ];
 
   return (
     <div className="annotation-toolbar">
-      <div className="toolbar-section">
+      <div className="toolbar-section tools">
         {tools.map(tool => (
           <button
             key={tool.id}
@@ -20,16 +31,27 @@ const AnnotationTools = ({ onToolSelect, selectedTool, highlightColor, onColorCh
             onClick={() => onToolSelect(tool.id)}
           >
             <span className="tool-icon">{tool.icon}</span>
-            {tool.label}
+            <span className="tool-label">{tool.label}</span>
           </button>
         ))}
       </div>
-      <div className="toolbar-section">
-        <button className="tool-button" onClick={onUndo}>
-          <span className="tool-icon">↺</span> Undo
+      
+      <div className="toolbar-section actions">
+        <button 
+          className="tool-button undo-button" 
+          onClick={onUndo}
+          disabled={!canUndo}
+        >
+          <span className="tool-icon">↩</span>
+          <span className="tool-label">Undo</span>
         </button>
-        <button className="tool-button" onClick={onRedo}>
-          <span className="tool-icon">↻</span> Redo
+        <button 
+          className="tool-button redo-button" 
+          onClick={onRedo}
+          disabled={!canRedo}
+        >
+          <span className="tool-icon">↪</span>
+          <span className="tool-label">Redo</span>
         </button>
         <button 
           className="tool-button save-button" 
@@ -37,9 +59,10 @@ const AnnotationTools = ({ onToolSelect, selectedTool, highlightColor, onColorCh
           disabled={isSaving}
         >
           <span className="tool-icon">💾</span>
-          {isSaving ? 'Saving...' : 'Save'}
+          <span className="tool-label">{isSaving ? 'Saving...' : 'Save'}</span>
         </button>
       </div>
+      
       {selectedTool === 'highlight' && (
         <div className="toolbar-section">
           <input
@@ -48,6 +71,7 @@ const AnnotationTools = ({ onToolSelect, selectedTool, highlightColor, onColorCh
             onChange={(e) => onColorChange(e.target.value)}
             className="color-picker"
           />
+          <span className="color-label">Color</span>
         </div>
       )}
     </div>
