@@ -215,3 +215,33 @@ export const getAssignedReviews = async (token) => {
 export const getFileStreamUrl = (fileId) => {
   return `${API_BASE_URL}/review/stream/${fileId}`;
 };
+
+
+export const saveReviewDetails = async (token, reviewId, details) => {
+  try {
+    const response = await axios.post(
+      `${API_BASE_URL}/review/details/${reviewId}`,
+      details,
+      {
+        headers: { Authorization: `Bearer ${token}` }
+      }
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: 'An error occurred' };
+  }
+};
+
+export const getReviewDetails = async (token, reviewId) => {
+  try {
+    const response = await axios.get(
+      `${API_BASE_URL}/review/details/${reviewId}`,
+      {
+        headers: { Authorization: `Bearer ${token}` }
+      }
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: 'An error occurred' };
+  }
+};

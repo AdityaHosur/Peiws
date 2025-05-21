@@ -6,6 +6,7 @@ import CommentMarker from './CommentMarker';
 import StickyNote from './StickyNote';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
+import {saveReviewDetails,getReviewDetails} from '../services/api';
 import './DocViewer.css';
 
   // Add these near the top, after imports
@@ -40,7 +41,7 @@ const loadComments = () => {
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
 
-const DocViewer = ({ fileUrl }) => {
+const DocViewer = ({ fileUrl ,reviewId}) => {
   const [numPages, setNumPages] = useState(null);
   const [pageNumber, setPageNumber] = useState(1);
   const [scale, setScale] = useState(1.0);
@@ -54,6 +55,7 @@ const DocViewer = ({ fileUrl }) => {
   const [stickyNotes, setStickyNotes] = useState(loadStickyNotes());
   const [undoStack, setUndoStack] = useState([]);
   const [redoStack, setRedoStack] = useState([]);
+  const [isSaving, setIsSaving] = useState(false);
 
   const handleUndo = () => {
   if (undoStack.length > 0) {
@@ -219,31 +221,259 @@ useEffect(() => {
   saveComments(comments);
 }, [comments]);
 
+useEffect(() => {
+  const loadReviewDetails = async () => {
+    if (!reviewId || !documentId) return;
+    
+    try {
+      const token = localStorage.getItem('token');
+      const details = await getReviewDetails(token, reviewId);
+      
+      // Group annotations by document ID and page number
+      const annotationsByPage = {};
+      const commentsByPage = {};
+      const stickyNotesByPage = {};
+
+      // Process annotations
+      details.annotations?.forEach(annotation => {
+        const pageNum = annotation.pageNumber.toString();
+        if (!annotationsByPage[pageNum]) {
+          annotationsByPage[pageNum] = [];
+        }
+
+        let validPositions = annotation.position;
+        
+        // Check if position is valid array
+        if (!Array.isArray(validPositions)) {
+          console.log("Invalid position format, attempting to parse:", annotation.position);
+          try {
+            // Try to parse if it's a JSON string
+            if (typeof annotation.position === 'string') {
+              validPositions = JSON.parse(annotation.position);
+            } else {
+              validPositions = [annotation.position]; // Convert to array if single object
+            }
+          } catch (e) {
+            console.error("Failed to parse position data:", e);
+            return; // Skip this annotation
+          }
+        }
+
+        const validatedPositions = validPositions.filter(pos => 
+          pos && typeof pos === 'object' && 
+          pos.left != null && 
+          pos.top != null && 
+          pos.width != null && 
+          pos.height != null
+        );
+
+        if (validatedPositions.length === 0) {
+          console.error("No valid positions found for annotation:", annotation);
+          return; // Skip this annotation
+        }
+        // Ensure annotation has all required properties
+        const processedAnnotation = {
+          ...annotation,
+          type: annotation.type|| 'highlight',
+          color: annotation.color || highlightColor,
+          content: annotation.content||'',
+          position: validatedPositions,
+          timestamp: annotation.timestamp || Date.now(),
+          pageNumber: parseInt(pageNum),
+          documentId: documentId
+        };
+        annotationsByPage[pageNum].push(processedAnnotation);
+      });
+
+      setAnnotations(prev => ({
+        ...prev,
+        [documentId]: annotationsByPage
+      }));
+
+      // Process comments
+      details.comments?.forEach(comment => {
+        if (!commentsByPage[comment.pageNumber]) {
+          commentsByPage[comment.pageNumber] = [];
+        }
+        commentsByPage[comment.pageNumber].push({
+          ...comment,
+          id: comment.id || Date.now(),
+          pageNumber: parseInt(comment.pageNumber),
+          documentId: documentId
+        });
+      });
+
+      // Process sticky notes
+      details.stickyNotes?.forEach(note => {
+        if (!stickyNotesByPage[note.pageNumber]) {
+          stickyNotesByPage[note.pageNumber] = [];
+        }
+        stickyNotesByPage[note.pageNumber].push({
+          ...note,
+          id: note.id || Date.now(),
+          pageNumber: parseInt(note.pageNumber),
+          documentId: documentId
+        });
+      });
+
+      // Update states with the processed data
+      setAnnotations(prev => ({
+        ...prev,
+        [documentId]: annotationsByPage
+      }));
+
+      setComments(prev => ({
+        ...prev,
+        [documentId]: commentsByPage
+      }));
+
+      setStickyNotes(prev => ({
+        ...prev,
+        [documentId]: stickyNotesByPage
+      }));
+
+      // Force reapplication of annotations
+      setTimeout(() => {
+        const pageElement = document.querySelector('.react-pdf__Page');
+        const textLayer = pageElement?.querySelector('.react-pdf__Page__textContent');
+        
+        if (textLayer) {
+          // Clear existing annotations first
+          const existingAnnotations = textLayer.querySelectorAll('.pdf-annotation');
+          existingAnnotations.forEach(annotation => annotation.remove());
+          
+          // Apply annotations for current page
+          const currentAnnotations = annotationsByPage[pageNumber] || [];
+          currentAnnotations.forEach(annotation => {
+            annotation.position.forEach(pos => {
+              const overlay = document.createElement('div');
+              overlay.className = `pdf-annotation ${annotation.type}`;
+              overlay.dataset.id = annotation.timestamp; // Add ID for debugging
+              
+              const scaledPos = {
+                left: pos.left * scale,
+                top: pos.top * scale,
+                width: pos.width * scale,
+                height: pos.height * scale
+              };
+
+              if (annotation.type === 'highlight') {
+                Object.assign(overlay.style, {
+                  position: 'absolute',
+                  left: `${scaledPos.left}px`,
+                  top: `${scaledPos.top}px`,
+                  width: `${scaledPos.width}px`,
+                  height: `${scaledPos.height}px`,
+                  backgroundColor: annotation.color || highlightColor,
+                  opacity: 0.4,
+                  pointerEvents: 'none',
+                  zIndex: 2
+                });
+              } else {
+                Object.assign(overlay.style, {
+                  position: 'absolute',
+                  left: `${scaledPos.left}px`,
+                  top: annotation.type === 'strikethrough' 
+                    ? `${scaledPos.top + (scaledPos.height / 2)}px` 
+                    : `${scaledPos.top + scaledPos.height - 2}px`,
+                  width: `${scaledPos.width}px`,
+                  height: '2px',
+                  backgroundColor: '#000',
+                  pointerEvents: 'none',
+                  zIndex: 2
+                });
+              }
+
+              textLayer.appendChild(overlay);
+            });
+          });
+        }
+      }, 1000); // Longer delay to ensure PDF is fully loaded
+    } catch (error) {
+      console.error('Error loading review details:', error);
+    }
+  };
+
+  loadReviewDetails();
+}, [documentId, reviewId, scale, highlightColor]);
+
+const saveReview = async () => {
+  if (!reviewId) return;
+  
+  setIsSaving(true);
+  try {
+    const token = localStorage.getItem('token');
+    
+    // Get all annotations for the current document
+    const allAnnotations = [];
+    const allComments = [];
+    const allStickies = [];
+
+    // Collect annotations from all pages
+    Object.entries(annotations[documentId] || {}).forEach(([pageNum, pageAnnotations]) => {
+      allAnnotations.push(...pageAnnotations.map(a => ({
+        ...a,
+        pageNumber: parseInt(pageNum),
+        documentId
+      })));
+    });
+
+    // Collect comments from all pages
+    Object.entries(comments[documentId] || {}).forEach(([pageNum, pageComments]) => {
+      allComments.push(...pageComments.map(c => ({
+        ...c,
+        pageNumber: parseInt(pageNum),
+        documentId
+      })));
+    });
+
+    // Collect sticky notes from all pages
+    Object.entries(stickyNotes[documentId] || {}).forEach(([pageNum, pageStickies]) => {
+      allStickies.push(...pageStickies.map(s => ({
+        ...s,
+        pageNumber: parseInt(pageNum),
+        documentId
+      })));
+    });
+
+    const details = {
+      annotations: allAnnotations,
+      comments: allComments,
+      stickyNotes: allStickies
+    };
+    
+    await saveReviewDetails(token, reviewId, details);
+    alert('Changes saved successfully!');
+  } catch (error) {
+    console.error('Error saving review details:', error);
+    alert('Failed to save changes. Please try again.');
+  } finally {
+    setIsSaving(false);
+  }
+};
+
 // Add this after your other useEffect hooks
 useEffect(() => {
   const reapplyAnnotations = () => {
     const pageElement = document.querySelector('.react-pdf__Page');
     const textLayer = pageElement?.querySelector('.react-pdf__Page__textContent');
 
-    if (!textLayer) return;
-
-    // Get annotations for current document and page
-    const currentAnnotations = annotations[documentId]?.[pageNumber] || [];
+    if (!textLayer || !documentId) return;
 
     // Clear existing annotations
     const existingAnnotations = textLayer.querySelectorAll('.pdf-annotation');
     existingAnnotations.forEach(annotation => annotation.remove());
 
-    // Delay applying annotations slightly to ensure PDF is rendered
+    // Get annotations for current document and page
+    const currentAnnotations = annotations[documentId]?.[pageNumber] || [];
+
+    // Apply annotations after a small delay
     setTimeout(() => {
-      // Apply annotations
       currentAnnotations.forEach(annotation => {
         annotation.position.forEach(pos => {
           const overlay = document.createElement('div');
           overlay.className = `pdf-annotation ${annotation.type}`;
-          overlay.dataset.documentId = documentId;
-          overlay.dataset.pageNumber = pageNumber;
-
+          
           const scaledPos = {
             left: pos.left * scale,
             top: pos.top * scale,
@@ -258,7 +488,7 @@ useEffect(() => {
               top: `${scaledPos.top}px`,
               width: `${scaledPos.width}px`,
               height: `${scaledPos.height}px`,
-              backgroundColor: annotation.color,
+              backgroundColor: annotation.color || highlightColor,
               opacity: 0.4,
               pointerEvents: 'none'
             });
@@ -279,13 +509,11 @@ useEffect(() => {
           textLayer.appendChild(overlay);
         });
       });
-    }, 100); // Small delay to ensure PDF rendering is complete
+    }, 100);
   };
 
-  // Use requestAnimationFrame for smoother rendering
   requestAnimationFrame(reapplyAnnotations);
-
-}, [scale, annotations, pageNumber, documentId]);
+}, [documentId, pageNumber, scale, annotations]);
 
 // Add this new useEffect to handle page changes
 useEffect(() => {
@@ -358,7 +586,7 @@ useEffect(() => {
 
 
 const handleTextSelection = () => {
-  if (!selectedTool || ['comment', 'sticky'].includes(selectedTool)) return;
+  if (!selectedTool || ['comment', 'sticky'].includes(selectedTool) || !documentId) return;
 
   const selection = window.getSelection();
   const text = selection.toString().trim();
@@ -611,6 +839,8 @@ const handleDocumentClick = (e) => {
         onColorChange={setHighlightColor}
         onUndo={handleUndo}
         onRedo={handleRedo}
+        onSave={saveReview}
+        isSaving={isSaving}
       />
       <div className="pdf-controls">
         <button onClick={previousPage} disabled={pageNumber <= 1}>

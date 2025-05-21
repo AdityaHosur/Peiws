@@ -50,3 +50,17 @@
   border-radius: 4px;
   cursor: pointer;
 }
+
+.save-button {
+  background-color: #4CAF50 !important;
+  color: white !important;
+}
+
+.save-button:hover:not(:disabled) {
+  background-color: #45a049 !important;
+}
+
+.save-button:disabled {
+  background-color: #cccccc !important;
+  cursor: not-allowed;
+}

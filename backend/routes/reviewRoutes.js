@@ -1,5 +1,11 @@
 const express = require('express');
-const { getReviewsByFile, updateReviewStatus, getReviewsAssignedToUser,streamFile } = require('../controllers/reviewController');
+const { getReviewsByFile, 
+    updateReviewStatus, 
+    getReviewsAssignedToUser,
+    streamFile,
+    saveReviewDetails,
+    getReviewDetails
+} = require('../controllers/reviewController');
 const authMiddleware = require('../middlewares/authMiddleware');
 
 const router = express.Router();
@@ -15,5 +21,9 @@ router.get('/assigned', authMiddleware, getReviewsAssignedToUser);
 
 // Stream file content
 router.get('/stream/:fileId',streamFile);
+
+router.post('/details/:reviewId', authMiddleware, saveReviewDetails);
+router.get('/details/:reviewId', authMiddleware, getReviewDetails);
+
 
 module.exports = router;

@@ -84,3 +84,72 @@ exports.updateReviewStatus = async (req, res) => {
     res.status(500).json({ message: 'Server error', error });
   }
 };
+
+// Add these new methods to the existing controller
+
+exports.saveReviewDetails = async (req, res) => {
+  try {
+    const { reviewId } = req.params;
+    const { annotations, comments, stickyNotes } = req.body;
+    const userId = req.user.id;
+
+    const review = await Review.findById(reviewId);
+    
+    if (!review) {
+      return res.status(404).json({ message: 'Review not found' });
+    }
+
+    // Check if the reviewer is authorized
+    if (review.reviewerId.toString() !== userId) {
+      return res.status(403).json({ message: 'Not authorized to modify this review' });
+    }
+
+    // Update review details
+    review.annotations = annotations || review.annotations;
+    review.comments = comments || review.comments;
+    review.stickyNotes = stickyNotes || review.stickyNotes;
+    review.lastModified = new Date();
+    
+    // If there are annotations/comments/notes, set status to in-progress
+    if (annotations?.length > 0 || comments?.length > 0 || stickyNotes?.length > 0) {
+      review.status = 'in-progress';
+    }
+
+    await review.save();
+
+    res.status(200).json({ 
+      message: 'Review details saved successfully',
+      review 
+    });
+  } catch (error) {
+    console.error('Error saving review details:', error);
+    res.status(500).json({ message: 'Server error', error });
+  }
+};
+
+exports.getReviewDetails = async (req, res) => {
+  try {
+    const { reviewId } = req.params;
+    const userId = req.user.id;
+
+    const review = await Review.findById(reviewId);
+    
+    if (!review) {
+      return res.status(404).json({ message: 'Review not found' });
+    }
+
+    // Check if the reviewer is authorized
+    if (review.reviewerId.toString() !== userId) {
+      return res.status(403).json({ message: 'Not authorized to view this review' });
+    }
+
+    res.status(200).json({
+      annotations: review.annotations || [],
+      comments: review.comments || [],
+      stickyNotes: review.stickyNotes || []
+    });
+  } catch (error) {
+    console.error('Error fetching review details:', error);
+    res.status(500).json({ message: 'Server error', error });
+  }
+};

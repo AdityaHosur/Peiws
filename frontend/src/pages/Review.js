@@ -50,7 +50,7 @@ const Review = () => {
         {selectedReview ? (
           <div>
             <h3 className="content-title">Review: {selectedReview.fileId.filename}</h3>
-            <DocViewer fileUrl={getFileStreamUrl(selectedReview.fileId.fileId)} />
+            <DocViewer fileUrl={getFileStreamUrl(selectedReview.fileId.fileId)} reviewId={selectedReview._id} />
           </div>
         ) : (
           <p>Select a document to view details</p>

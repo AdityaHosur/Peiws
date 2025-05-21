@@ -1,7 +1,7 @@
 import React from 'react';
 import './AnnotationTools.css';
 
-const AnnotationTools = ({ onToolSelect, selectedTool, highlightColor, onColorChange, onUndo, onRedo }) => {
+const AnnotationTools = ({ onToolSelect, selectedTool, highlightColor, onColorChange, onUndo, onRedo,onSave,isSaving }) => {
   const tools = [
     { id: 'highlight', label: 'Highlight', icon: '🖍️' },
     { id: 'strikethrough', label: 'Strikethrough', icon: '🚫' },
@@ -30,6 +30,14 @@ const AnnotationTools = ({ onToolSelect, selectedTool, highlightColor, onColorCh
         </button>
         <button className="tool-button" onClick={onRedo}>
           <span className="tool-icon">↻</span> Redo
+        </button>
+        <button 
+          className="tool-button save-button" 
+          onClick={onSave}
+          disabled={isSaving}
+        >
+          <span className="tool-icon">💾</span>
+          {isSaving ? 'Saving...' : 'Save'}
         </button>
       </div>
       {selectedTool === 'highlight' && (
