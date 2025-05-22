@@ -10,6 +10,7 @@ const annotationSchema = new mongoose.Schema({
     width: Number,
     height: Number
   }],
+  pageNumber: Number,
   timestamp: Number
 });
 
@@ -33,13 +34,29 @@ const stickyNoteSchema = new mongoose.Schema({
   pageNumber: Number
 });
 
+const scoreSchema = new mongoose.Schema({
+  documentId: String,
+  reviewId: String,
+  scores: {
+    structure: Number,
+    grammar: Number,
+    clarity: Number,
+    content: Number,
+    overall: Number
+  },
+  feedback: String,
+  summary: String,
+  timestamp: Number
+}, { _id: false });
+
 const reviewSchema = new mongoose.Schema({
-  fileId: { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'uploads.files' },
+  fileId: { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'Upload' },
   reviewerId: { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'User' },
   status: { type: String, enum: ['pending', 'in-progress', 'completed'], default: 'pending' },
   annotations: [annotationSchema],
   comments: [commentSchema],
   stickyNotes: [stickyNoteSchema],
+  scores: {type: Object, default: {}},
   reviewedAt: { type: Date },
   lastModified: { type: Date, default: Date.now }
 });

@@ -139,12 +139,6 @@ input[type="text"]:focus, select:focus {
   margin-top: 10px;
 }
 
-.reviewer-list {
-  margin-top: 10px;
-  list-style-type: none;
-  padding: 0;
-}
-
 .reviewer-item {
   display: flex;
   justify-content: space-between;
@@ -177,5 +171,46 @@ body.dark-mode .upload-button {
 
 body.dark-mode .upload-button:hover {
   background-color: var(--accent-light);
+  color: var(--text-dark);
+}
+
+
+.error-message {
+  color: #e74c3c;
+  font-size: 0.9rem;
+  margin-top: 0.3rem;
+}
+
+.reviewer-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 5px;
+  padding: 8px 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: rgba(0, 0, 0, 0.03);
+}
+
+body.dark-mode .reviewer-item {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-color: #444;
+}
+
+.reviewer-list {
+  max-height: 150px;
+  overflow-y: auto;
+  margin-top: 10px;
+}
+
+input[type="date"] {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-color: #fff;
+}
+
+body.dark-mode input[type="date"] {
+  background-color: var(--primary-dark);
   color: var(--text-dark);
 }

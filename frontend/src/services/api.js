@@ -124,7 +124,7 @@ export const inviteUsersToOrganization = async (token, organizationId, emails) =
 };
 
 // Upload a file
-export const uploadFile = async (token, file, tags, visibility, organizationName, reviewers) => {
+export const uploadFile = async (token, file, tags, visibility, organizationName, reviewers, deadline) => {
   try {
     const formData = new FormData();
     formData.append('file', file);
@@ -134,6 +134,9 @@ export const uploadFile = async (token, file, tags, visibility, organizationName
       formData.append('organizationName', organizationName);
     } else {
       formData.append('reviewers',JSON.stringify(reviewers || []));
+    }
+    if (deadline) {
+      formData.append('deadline', deadline);
     }
 
     const response = await axios.post(`${API_BASE_URL}/file/upload`, formData, {
@@ -236,6 +239,37 @@ export const getReviewDetails = async (token, reviewId) => {
   try {
     const response = await axios.get(
       `${API_BASE_URL}/review/details/${reviewId}`,
+      {
+        headers: { Authorization: `Bearer ${token}` }
+      }
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: 'An error occurred' };
+  }
+};
+
+// Add these functions to your api.js file
+
+export const updateReviewStatus = async (token, reviewId, status) => {
+  try {
+    const response = await axios.put(
+      `${API_BASE_URL}/review/status/${reviewId}`,
+      { status },
+      {
+        headers: { Authorization: `Bearer ${token}` }
+      }
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: 'An error occurred' };
+  }
+};
+
+export const getReviewStatus = async (token, reviewId) => {
+  try {
+    const response = await axios.get(
+      `${API_BASE_URL}/review/status/${reviewId}`,
       {
         headers: { Authorization: `Bearer ${token}` }
       }

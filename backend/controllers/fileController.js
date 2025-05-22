@@ -1,4 +1,5 @@
 const { getGridFSBucket } = require('../config/gridfs');
+const User = require('../models/User');
 const Upload = require('../models/Upload');
 const Review = require('../models/Review');
 const mongoose = require('mongoose');
@@ -34,13 +35,20 @@ exports.uploadFile = async (req, res) => {
         console.log('Reviewers before:', req.body.reviewers);
         try {
           // Parse the JSON string if it exists
-          if (req.body.reviewers) {
-            const parsedReviewers = JSON.parse(req.body.reviewers);
+          const parsedReviewers = JSON.parse(req.body.reviewers);
             if (Array.isArray(parsedReviewers)) {
-              reviewerIds = parsedReviewers.map(id => new mongoose.Types.ObjectId(id.trim()));
+              // Find user IDs by email addresses
+              const reviewerPromises = parsedReviewers.map(async (email) => {
+                const user = await User.findOne({ email: email.trim() });
+                return user ? user._id : null;
+              });
+              const resolvedReviewerIds = (await Promise.all(reviewerPromises))
+                .filter(id => id !== null)
+                .map(id => new mongoose.Types.ObjectId(id));
+              
+              reviewerIds = resolvedReviewerIds;
               console.log('Parsed reviewerIds:', reviewerIds);
             }
-          }
         } catch (error) {
           console.error('Error parsing reviewers:', error);
         }
@@ -54,6 +62,7 @@ exports.uploadFile = async (req, res) => {
 
         // Save file metadata in the uploads collection
         const uploadDetails = new Upload({
+          _id: uploadStream.id, 
           fileId: uploadStream.id, // GridFS file ID
           fileGroupId, // Group ID for file versions
           filename: req.file.originalname, // Original filename
@@ -71,10 +80,11 @@ exports.uploadFile = async (req, res) => {
 
         // Create review records for each reviewer
         console.log('Reviewers after:', reviewerIds);
+        console.log('Upload Details:', uploadDetails.fileId);
 
         if (reviewerIds.length > 0) {
           const reviewRecords = reviewerIds.map((reviewerId) => ({
-            fileId: uploadStream.id,
+            fileId: uploadDetails.fileId,
             reviewerId,
           }));
 

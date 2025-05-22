@@ -1,10 +1,11 @@
 const express = require('express');
 const { getReviewsByFile, 
-    updateReviewStatus, 
     getReviewsAssignedToUser,
     streamFile,
     saveReviewDetails,
-    getReviewDetails
+    getReviewDetails,
+    getReviewStatus,
+    updateReviewStatus
 } = require('../controllers/reviewController');
 const authMiddleware = require('../middlewares/authMiddleware');
 
@@ -12,9 +13,6 @@ const router = express.Router();
 
 // Get all reviews for a file
 router.get('/file/:fileId', authMiddleware, getReviewsByFile);
-
-// Update review status
-router.patch('/:reviewId', authMiddleware, updateReviewStatus);
 
 // Get reviews assigned to the logged-in user
 router.get('/assigned', authMiddleware, getReviewsAssignedToUser);
@@ -24,6 +22,11 @@ router.get('/stream/:fileId',streamFile);
 
 router.post('/details/:reviewId', authMiddleware, saveReviewDetails);
 router.get('/details/:reviewId', authMiddleware, getReviewDetails);
+
+// Add these routes if not already present
+
+router.get('/status/:reviewId', authMiddleware, getReviewStatus);
+router.put('/status/:reviewId', authMiddleware, updateReviewStatus);
 
 
 module.exports = router;

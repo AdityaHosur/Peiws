@@ -261,6 +261,78 @@ textarea:focus {
   text-align: center;
 }
 
+/* Add to review.css */
+.loading-message, .empty-message {
+  text-align: center;
+  color: #666;
+  margin: 20px 0;
+  font-style: italic;
+}
+
+.error-message {
+  color: #d32f2f;
+  text-align: center;
+  margin: 20px 0;
+  padding: 10px;
+  background-color: rgba(211, 47, 47, 0.1);
+  border-radius: 4px;
+}
+
+.document-info {
+  margin-bottom: 15px;
+  color: #555;
+}
+
+.info-label {
+  font-weight: 600;
+  margin-right: 5px;
+}
+
+.review-status {
+  display: block;
+  margin-top: 5px;
+  font-size: 0.9em;
+}
+
+.status-pending {
+  color: #ff9800;
+  font-weight: 500;
+}
+
+.status-in-progress {
+  color: #2196f3;
+  font-weight: 500;
+}
+
+.status-completed {
+  color: #4caf50;
+  font-weight: 500;
+}
+
+.empty-selection {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  color: #777;
+  font-style: italic;
+  background-color: rgba(0, 0, 0, 0.03);
+  border-radius: 4px;
+}
+
+.document-item {
+  transition: background-color 0.2s ease;
+}
+
+.document-item:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.document-item.selected {
+  background-color: rgba(33, 150, 243, 0.1);
+  border-left: 3px solid #2196f3;
+}
+
 /* Responsive design */
 @media (max-width: 768px) {
   .review-container {

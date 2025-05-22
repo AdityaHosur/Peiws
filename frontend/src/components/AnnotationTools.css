@@ -111,3 +111,46 @@
     padding: 8px;
   }
 }
+
+.score-button {
+  background-color: #8e44ad;
+  color: white;
+  border-color: #8e44ad;
+}
+
+.score-button:hover:not(:disabled) {
+  background-color: #7d3c98;
+}
+
+/* Add these to your existing AnnotationTools.css */
+
+.submit-button {
+  background-color: #28a745;
+  color: white;
+  border-color: #28a745;
+}
+
+.submit-button:hover:not(:disabled) {
+  background-color: #218838;
+}
+
+.submit-button:disabled {
+  background-color: #90c49b;
+  cursor: not-allowed;
+}
+
+.review-completed-notice {
+  color: #28a745;
+  font-weight: bold;
+  padding: 8px 12px;
+  background-color: #e9f7ef;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.review-completed-notice::before {
+  content: '✓';
+  font-size: 18px;
+}

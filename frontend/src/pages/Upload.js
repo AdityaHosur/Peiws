@@ -12,8 +12,17 @@ const Upload = () => {
   const [reviewerAssignment, setReviewerAssignment] = useState('manual');
   const [reviewers, setReviewers] = useState([]); // Store multiple reviewer IDs
   const [currentReviewer, setCurrentReviewer] = useState(''); // Temporary input for a single reviewer
+  const [deadline, setDeadline] = useState(''); // New state for deadline
   const [error, setError] = useState('');
   const token = localStorage.getItem('token'); // Retrieve token from localStorage
+
+  const getTodayDate = () => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
@@ -35,6 +44,11 @@ const Upload = () => {
 
   const addReviewer = () => {
     if (currentReviewer.trim() !== '') {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(currentReviewer.trim())) {
+        setError('Please enter a valid email address');
+        return;
+      }
       setReviewers([...reviewers, currentReviewer.trim()]);
       setCurrentReviewer(''); // Clear the input field
     }
@@ -54,7 +68,8 @@ const Upload = () => {
         tags,
         visibility,
         organizationName,
-        reviewers // Send the reviewers array
+        reviewers, // Send the reviewers array
+        deadline
       );
       alert('File uploaded successfully!');
       console.log('Response:', response);
@@ -64,6 +79,7 @@ const Upload = () => {
       setVisibility('private');
       setOrganizationName('');
       setReviewers([]); // Clear the reviewers list
+      setDeadline(''); // Clear the deadline
     } catch (err) {
       setError(err.message || 'Failed to upload file');
     }
@@ -103,6 +119,17 @@ const Upload = () => {
               onChange={(e) => setTags(e.target.value)}
               placeholder="Enter tags separated by commas"
             />
+          </div>
+          <div className="form-group">
+            <label htmlFor="deadline">Review Deadline</label>
+              <input
+                type="date"
+                id="deadline"
+                value={deadline}
+                onChange={(e) => setDeadline(e.target.value)}
+                min={getTodayDate()}
+                className="deadline-input"
+              />
           </div>
         </form>
       </div>
@@ -152,7 +179,7 @@ const Upload = () => {
               </div>
               {reviewerAssignment === 'manual' && (
                 <div className="form-group">
-                  <label htmlFor="reviewerId">Reviewer IDs</label>
+                  <label htmlFor="reviewerId">Reviewer Email Ids</label>
                   <div className="reviewer-input">
                     <input
                       type="text"
