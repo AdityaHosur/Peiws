@@ -22,7 +22,7 @@ const clearAllAnnotations = () => {
   }
 };
 
-const DocViewer = ({ fileUrl, reviewId }) => {
+const DocViewer = ({ fileUrl, reviewId, readOnly=false }) => {
   // State for PDF viewer
   const [numPages, setNumPages] = useState(null);
   const [pageNumber, setPageNumber] = useState(1);
@@ -34,6 +34,7 @@ const DocViewer = ({ fileUrl, reviewId }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [completedReviews, setCompletedReviews] = useState({});
+  const [isReadOnly, setIsReadOnly] = useState(readOnly);
   const isCurrentReviewCompleted = completedReviews[documentId] || false;
   
   // Refs
@@ -55,6 +56,11 @@ const DocViewer = ({ fileUrl, reviewId }) => {
   // Score card state
   const [isScoreCardOpen, setIsScoreCardOpen] = useState(false);
   const [documentScores, setDocumentScores] = useState({});
+
+  useEffect(() => {
+  // Update readOnly state when prop changes or review is completed
+  setIsReadOnly(readOnly || isCurrentReviewCompleted);
+}, [readOnly, isCurrentReviewCompleted]);
 
   // Update undo/redo availability based on stack state
   useEffect(() => {
@@ -312,7 +318,9 @@ const DocViewer = ({ fileUrl, reviewId }) => {
 
   const handleSubmitReview = async () => {
   // Check if scores exist
-  if (!documentScores?.[documentId]?.scores?.overall > 0) {
+  if (!documentScores[documentId] || 
+      !documentScores[documentId].overall || 
+      documentScores[documentId].overall <= 0) {
     alert('Please provide scores before submitting your review.');
     return;
   }
@@ -512,7 +520,7 @@ const DocViewer = ({ fileUrl, reviewId }) => {
     };
 
     loadReviewDetails();
-  }, [documentId, reviewId, pageNumber, highlightColor]);
+  }, [documentId, reviewId, pageNumber]);
 
   // Save changes to backend
   const saveChangesToBackend = async () => {
@@ -554,7 +562,7 @@ const DocViewer = ({ fileUrl, reviewId }) => {
         annotations: allAnnotations,
         comments: allComments,
         stickyNotes: allStickies,
-        scores: documentScores || {}
+        scores: documentScores[documentId] || {}
       };
       
       await saveReviewDetails(token, reviewId, details);
@@ -580,72 +588,56 @@ const DocViewer = ({ fileUrl, reviewId }) => {
   };
 
   // Handle score submission
-  const handleScoreSubmit = async (scoreData) => {
-    setIsSaving(true);
-    try {
-      const token = localStorage.getItem('token');
-      
-      const newScores = {
-      ...documentScores
+const handleScoreSubmit = async (scoreData) => {
+  setIsSaving(true);
+  try {
+    const token = localStorage.getItem('token');
+    
+    // Validate scores - ensure they're integers
+    const validatedScores = {
+      structure: Number(scoreData.structure),
+      grammar: Number(scoreData.grammar),
+      clarity: Number(scoreData.clarity),
+      content: Number(scoreData.content),
+      overall: Number(scoreData.overall),
+      feedback: scoreData.feedback,
+      summary: scoreData.summary,
+      timestamp: Date.now()
     };
     
-    // Add the new score data
-    newScores[documentId] = scoreData;
+    console.log("Validated scores to submit:", validatedScores);
     
-    // Update the state
-    setDocumentScores(newScores);
-      
-      // Save to backend
-      const allAnnotations = [];
-      const allComments = [];
-      const allStickies = [];
-      
-      Object.entries(annotations[documentId] || {}).forEach(([pageNum, pageAnnotations]) => {
-        allAnnotations.push(...pageAnnotations.map(a => ({
-          ...a,
-          pageNumber: parseInt(pageNum),
-          documentId
-        })));
-      });
-
-      Object.entries(comments[documentId] || {}).forEach(([pageNum, pageComments]) => {
-        allComments.push(...pageComments.map(c => ({
-          ...c,
-          pageNumber: parseInt(pageNum),
-          documentId
-        })));
-      });
-
-      Object.entries(stickyNotes[documentId] || {}).forEach(([pageNum, pageStickies]) => {
-        allStickies.push(...pageStickies.map(s => ({
-          ...s,
-          pageNumber: parseInt(pageNum),
-          documentId
-        })));
-      });
-      
-      const details = {
-        annotations: allAnnotations,
-        comments: allComments,
-        stickyNotes: allStickies,
-        scores: newScores
-      };  
-      
-      await saveReviewDetails(token, reviewId, details);
-      
-      // Force reapplication of annotations
-      setTimeout(() => {
-        setAnnotations(prev => ({...prev}));
-      }, 100);
-      
-      alert('Evaluation submitted successfully!');
-    } catch (error) {
-      console.error('Error saving evaluation:', error);
-      alert('Failed to save evaluation. Please try again.');
-    } finally {
-      setIsSaving(false);
-    }
-  };
+    // Prepare the data for backend
+    const details = {
+      annotations: annotations[documentId] ? Object.values(annotations[documentId]).flat() : [],
+      comments: comments[documentId] ? Object.values(comments[documentId]).flat() : [],
+      stickyNotes: stickyNotes[documentId] ? Object.values(stickyNotes[documentId]).flat() : [],
+      scores: validatedScores // Use the validated scores
+    };
+    
+    // Log the data being sent to the backend
+    console.log("Sending data to backend:", JSON.stringify(details.scores));
+    
+    // Update local state with the validated scores
+    setDocumentScores(prev => {
+      const updated = {
+        ...prev,
+        [documentId]: validatedScores
+      };
+      console.log("Updated documentScores:", updated);
+      return updated;
+    });
+    const response = await saveReviewDetails(token, reviewId, details);
+    console.log("Backend response:", response);
+    
+    alert('Evaluation submitted successfully!');
+  } catch (error) {
+    console.error('Error saving evaluation:', error);
+    alert('Failed to save evaluation. Please try again.');
+  } finally {
+    setIsSaving(false);
+  }
+};
 
   useEffect(() => {
   const checkReviewStatus = async () => {
@@ -716,8 +708,8 @@ const DocViewer = ({ fileUrl, reviewId }) => {
                 top: `${scaledPos.top}px`,
                 width: `${scaledPos.width}px`,
                 height: `${scaledPos.height}px`,
-                backgroundColor: annotation.color || highlightColor,
-                opacity: 0.4,
+                backgroundColor: annotation.color,
+                opacity: 0.8,
                 pointerEvents: 'none',
                 zIndex: 2
               });
@@ -730,7 +722,7 @@ const DocViewer = ({ fileUrl, reviewId }) => {
                   : `${scaledPos.top + scaledPos.height - 2}px`,
                 width: `${scaledPos.width}px`,
                 height: '2px',
-                backgroundColor: '#000',
+                backgroundColor: annotation.color,
                 pointerEvents: 'none',
                 zIndex: 2
               });
@@ -749,7 +741,7 @@ const DocViewer = ({ fileUrl, reviewId }) => {
     };
 
     renderAnnotations();
-  }, [documentId, pageNumber, scale, annotations, highlightColor]);
+  }, [documentId, pageNumber, scale, annotations]);
 
   // Ensure annotations are reapplied when the score card is closed
   useEffect(() => {
@@ -760,7 +752,7 @@ const DocViewer = ({ fileUrl, reviewId }) => {
 
   // Handle text selection for annotations
   const handleTextSelection = () => {
-    if (isCurrentReviewCompleted) return;
+    if (isReadOnly||isCurrentReviewCompleted) return;
     if (!selectedTool || ['comment', 'sticky'].includes(selectedTool) || !documentId) return;
 
     const selection = window.getSelection();
@@ -950,7 +942,7 @@ const DocViewer = ({ fileUrl, reviewId }) => {
   };
 
   const handleDocumentClick = (e) => {
-    if (isCurrentReviewCompleted) return;
+    if (isReadOnly||isCurrentReviewCompleted) return;
     if (selectedTool === 'comment') {
       const container = e.currentTarget;
       const rect = container.getBoundingClientRect();
@@ -1110,6 +1102,7 @@ const DocViewer = ({ fileUrl, reviewId }) => {
 
   return (
     <div className="doc-viewer" ref={containerRef}>
+      {!isReadOnly && (
       <AnnotationTools
         onToolSelect={handleToolSelect}
         selectedTool={selectedTool}
@@ -1128,7 +1121,7 @@ const DocViewer = ({ fileUrl, reviewId }) => {
         documentId={documentId}
         isReviewCompleted={isCurrentReviewCompleted}
       />
-      
+      )}
       <ScoreCard
         isOpen={isScoreCardOpen}
         onClose={() => setIsScoreCardOpen(false)}
@@ -1196,6 +1189,7 @@ const DocViewer = ({ fileUrl, reviewId }) => {
             scale={scale}
             onDelete={handleCommentDelete}
             onUpdate={handleCommentUpdate}
+            readOnly={isReadOnly || isCurrentReviewCompleted}
           />
         ))}
         
@@ -1207,6 +1201,7 @@ const DocViewer = ({ fileUrl, reviewId }) => {
             scale={scale}
             onDelete={handleStickyDelete}
             onUpdate={handleStickyUpdate}
+            readOnly={isReadOnly || isCurrentReviewCompleted}
           />
         ))}
       </div>

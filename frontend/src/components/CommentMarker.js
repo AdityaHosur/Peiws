@@ -1,23 +1,26 @@
 import React, { useState } from 'react';
 import './CommentMarker.css';
 
-const CommentMarker = ({ comment, position, scale, onDelete, onUpdate }) => {
+const CommentMarker = ({ comment, position, scale, onDelete, onUpdate, readOnly=false }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedText, setEditedText] = useState(comment.text);
 
   const handleIconClick = (e) => {
     e.stopPropagation();
-    if (!comment.text) {
+    if (!readOnly && !comment.text) {
       setIsEditing(true);
     }
   };
 
   const handleContentClick = (e) => {
     e.stopPropagation();
-    setIsEditing(true);
+    if (!readOnly) {
+      setIsEditing(true);
+    }
   };
 
   const handleSave = () => {
+    if (readOnly) return;
     onUpdate({ ...comment, text: editedText });
     setIsEditing(false);
   };
@@ -34,7 +37,7 @@ const CommentMarker = ({ comment, position, scale, onDelete, onUpdate }) => {
     >
       <div className="comment-icon" onClick={handleIconClick}>💭</div>
       <div className="comment-popup" onClick={e => e.stopPropagation()}>
-        {isEditing ? (
+        {isEditing && !readOnly ? (
           <div className="comment-edit">
             <textarea
               value={editedText}
@@ -50,19 +53,21 @@ const CommentMarker = ({ comment, position, scale, onDelete, onUpdate }) => {
         ) : (
           <div 
             className="comment-content"
-            onClick={handleContentClick} // Add click handler here
+            onClick={readOnly ? null : handleContentClick}
           >
             <p>{comment.text || 'Click to add comment'}</p>
-            <div className="comment-actions">
-              <button onClick={(e) => {
-                e.stopPropagation(); // Prevent content click handler
-                setIsEditing(true);
-              }}>Edit</button>
-              <button onClick={(e) => {
-                e.stopPropagation(); // Prevent content click handler
-                onDelete(comment.id);
-              }}>Delete</button>
-            </div>
+            {!readOnly && (
+              <div className="comment-actions">
+                <button onClick={(e) => {
+                  e.stopPropagation(); // Prevent content click handler
+                  setIsEditing(true);
+                }}>Edit</button>
+                <button onClick={(e) => {
+                  e.stopPropagation(); // Prevent content click handler
+                  onDelete(comment.id);
+                }}>Delete</button>
+              </div>
+            )}
           </div>
         )}
       </div>

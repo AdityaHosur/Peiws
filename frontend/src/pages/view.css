@@ -232,23 +232,572 @@ body.dark-mode .version {
   background-color: var(--primary-dark);
 }
 
-/* Responsive design */
+/* Add to d:\coding\Peiws\frontend\src\pages\view.css */
+.loading-message, .empty-message {
+  text-align: center;
+  color: #666;
+  padding: 20px;
+  font-style: italic;
+}
+
+.error-message {
+  color: #d32f2f;
+  text-align: center;
+  padding: 10px;
+  background-color: rgba(211, 47, 47, 0.1);
+  border-radius: 4px;
+}
+
+.document-details {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: #666;
+  margin-top: 5px;
+}
+
+.document-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 5px;
+}
+
+.tag {
+  background-color: #f1f1f1;
+  padding: 2px 6px;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  color: #333;
+}
+
+body.dark-mode .tag {
+  background-color: #444;
+  color: #ddd;
+}
+
+.no-tags {
+  font-style: italic;
+  font-size: 0.7rem;
+  color: #999;
+}
+
+.document-status {
+  display: inline-block;
+  margin-top: 8px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+.status-draft {
+  background-color: #e3f2fd;
+  color: #1565c0;
+}
+
+.status-submitted {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+}
+
+.status-reviewed {
+  background-color: #e8eaf6;
+  color: #3949ab;
+}
+
+.select-document-prompt {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  color: #666;
+  font-style: italic;
+}
+
+.pdf-preview {
+  border: none;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.segment-button {
+  padding: 8px 16px;
+  background-color: transparent;
+  border: 1px solid var(--accent-light);
+  color: var(--text-light);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.segment-button.active {
+  background-color: var(--accent-light);
+  color: white;
+}
+
+body.dark-mode .segment-button {
+  border-color: var(--accent-dark);
+  color: var(--text-dark);
+}
+
+body.dark-mode .segment-button.active {
+  background-color: var(--accent-dark);
+  color: white;
+}
+
+/* Add to view.css */
+.reviews-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.review-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.reviewer-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.reviewer-button {
+  padding: 0.5rem 1rem;
+  background-color: #f0f0f0;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.reviewer-button.active {
+  background-color: #007bff;
+  color: white;
+  border-color: #0056b3;
+}
+
+.no-reviews, .no-selection, .loading-spinner {
+  font-style: italic;
+  color: #666;
+}
+
+.document-preview {
+  min-height: 500px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.no-reviewers-message {
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border-top: 1px solid #ddd;
+  color: #666;
+  font-style: italic;
+}
+
+.reviewer-count {
+  margin-top: 5px;
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.evaluation-summary {
+  margin-bottom: 20px;
+  padding: 16px;
+  background-color: #f9f9f9;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+}
+
+body.dark-mode .evaluation-summary {
+  background-color: #2a2a2a;
+  border-color: #444;
+}
+
+.evaluation-summary h4 {
+  font-size: 1.2rem;
+  margin-top: 0;
+  margin-bottom: 12px;
+  color: #333;
+  border-bottom: 1px solid #e0e0e0;
+  padding-bottom: 8px;
+}
+
+body.dark-mode .evaluation-summary h4 {
+  color: #eee;
+  border-color: #444;
+}
+
+.evaluation-summary h5 {
+  font-size: 1rem;
+  margin-top: 12px;
+  margin-bottom: 8px;
+  color: #555;
+}
+
+body.dark-mode .evaluation-summary h5 {
+  color: #ccc;
+}
+
+/* Enhanced Score Cards */
+.score-visual-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px;
+  margin: 16px 0;
+}
+
+.score-card {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  padding: 16px;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.score-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+}
+
+body.dark-mode .score-card {
+  background-color: #333;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.score-card-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.score-icon {
+  font-size: 1.2rem;
+  margin-right: 8px;
+}
+
+.score-label {
+  font-weight: 600;
+  color: #333;
+}
+
+body.dark-mode .score-label {
+  color: #ddd;
+}
+
+.score-value-display {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #333;
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+body.dark-mode .score-value-display {
+  color: #fff;
+}
+
+.score-bar-container {
+  height: 6px;
+  background-color: #e9ecef;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+body.dark-mode .score-bar-container {
+  background-color: #555;
+}
+
+.score-bar {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.8s ease, background-color 0.8s ease;
+}
+
+/* Enhanced review content */
+.review-text-container {
+  margin-top: 24px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+
+.review-summary, .review-feedback {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.review-summary h5, .review-feedback h5 {
+  background-color: #f8f9fa;
+  margin: 0;
+  padding: 12px 16px;
+  font-size: 1rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+body.dark-mode .review-summary h5, 
+body.dark-mode .review-feedback h5 {
+  background-color: #2a2a2a;
+  border-color: #444;
+}
+
+.review-icon {
+  margin-right: 8px;
+}
+
+.review-content-box {
+  background-color: white;
+  padding: 16px;
+  border-radius: 0 0 8px 8px;
+}
+
+body.dark-mode .review-content-box {
+  background-color: #333;
+}
+
+.review-content-box p {
+  margin: 0;
+  line-height: 1.6;
+  color: #444;
+  white-space: pre-wrap;
+}
+
+body.dark-mode .review-content-box p {
+  color: #ccc;
+}
+
+/* Enhanced document section */
+.preview-section {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.evaluation-summary {
+  margin-bottom: 24px;
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.05);
+  overflow: hidden;
+  border: 1px solid #eaeaea;
+}
+
+body.dark-mode .evaluation-summary {
+  background-color: #2a2a2a;
+  border-color: #444;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+}
+
+.evaluation-summary h4 {
+  margin: 0;
+  padding: 16px 20px;
+  font-size: 1.2rem;
+  color: #333;
+  background-color: #f1f1f1;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+body.dark-mode .evaluation-summary h4 {
+  background-color: #222;
+  color: #eee;
+  border-color: #444;
+}
+
+.scores-container {
+  padding: 16px 20px;
+}
+
+.scores-container h5 {
+  margin-top: 0;
+  color: #555;
+  font-size: 1.1rem;
+}
+
+body.dark-mode .scores-container h5 {
+  color: #ccc;
+}
+
+/* Better reviewer buttons */
+.reviewer-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.reviewer-button {
+  padding: 10px 14px;
+  background-color: #f0f0f0;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-weight: 500;
+  color: #444;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.reviewer-button:hover {
+  background-color: #e0e0e0;
+}
+
+.reviewer-button.active {
+  background-color: #007bff;
+  color: white;
+  border-color: #0056b3;
+}
+
+body.dark-mode .reviewer-button {
+  background-color: #333;
+  border-color: #444;
+  color: #ddd;
+}
+
+body.dark-mode .reviewer-button:hover {
+  background-color: #444;
+}
+
+body.dark-mode .reviewer-button.active {
+  background-color: #0d6efd;
+  color: white;
+}
+
+/* Better document list */
+.document-item {
+  background-color: white;
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 10px;
+  border: 1px solid #eaeaea;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.document-item:hover {
+  background-color: #f5f5f5;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+}
+
+.document-item.selected {
+  background-color: #e6f2ff;
+  border-color: #b3d7ff;
+}
+
+body.dark-mode .document-item {
+  background-color: #333;
+  border-color: #444;
+}
+
+body.dark-mode .document-item:hover {
+  background-color: #3a3a3a;
+}
+
+body.dark-mode .document-item.selected {
+  background-color: #1a3a5f;
+  border-color: #2c5885;
+}
+
+.document-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #333;
+}
+
+body.dark-mode .document-title {
+  color: #eee;
+}
+
+.document-details, .reviewer-count {
+  font-size: 0.85rem;
+  color: #666;
+}
+
+body.dark-mode .document-details, 
+body.dark-mode .reviewer-count {
+  color: #aaa;
+}
+
+/* Better empty states */
+.no-selection, .select-document-prompt, .no-reviewers-message {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border: 1px dashed #dee2e6;
+  padding: 30px;
+  text-align: center;
+  color: #6c757d;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.no-selection p, .select-document-prompt p, .no-reviewers-message p {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+body.dark-mode .no-selection, 
+body.dark-mode .select-document-prompt, 
+body.dark-mode .no-reviewers-message {
+  background-color: #2a2a2a;
+  border-color: #444;
+  color: #aaa;
+}
+
+/* Card shadows */
+.view-card {
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  border: 1px solid #eaeaea;
+}
+
+body.dark-mode .view-card {
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  border-color: #444;
+}
+
+/* Improved mobile responsiveness */
 @media (max-width: 768px) {
   .view-container {
     flex-direction: column;
+    padding: 16px;
   }
   
   .docs-list, .content-area {
-    flex: 0 0 100%;
+    width: 100%;
     max-width: 100%;
+    margin-bottom: 16px;
   }
   
-  .docs-list {
-    max-height: 300px;
+  .score-visual-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   }
   
-  .versions-container {
-    flex-direction: column;
-    gap: 1rem;
+  .segmented-control {
+    flex-wrap: wrap;
+  }
+  
+  .segment-button {
+    flex: 1 1 auto;
+    min-width: 100px;
+    padding: 8px;
+  }
+  
+  .reviewer-buttons {
+    justify-content: center;
+  }
+  
+  .evaluation-summary {
+    margin-bottom: 16px;
   }
 }

@@ -28,8 +28,7 @@ const AnnotationTools = ({
   ];
 
   // Determine if scoring has been done for this document
-  const hasScores = documentScores?.[documentId]?.scores?.overall > 0;
-
+  const hasScores = documentScores?.[documentId]?.overall > 0;
   return (
     <div className="annotation-toolbar">
       <div className="toolbar-section tools">

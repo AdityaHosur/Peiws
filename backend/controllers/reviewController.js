@@ -49,22 +49,6 @@ exports.streamFile = async (req, res) => {
   }
 };
 
-// Get all reviews for a file
-exports.getReviewsByFile = async (req, res) => {
-  try {
-    const { fileId } = req.params;
-    const reviews = await Review.find({ fileId }).populate('reviewerId', 'name email');
-
-    if (!reviews || reviews.length === 0) {
-      return res.status(404).json({ message: 'No reviews found for this file' });
-    }
-
-    res.status(200).json(reviews);
-  } catch (error) {
-    res.status(500).json({ message: 'Server error', error });
-  }
-};
-
 // Add or update the status endpoint
 
 exports.getReviewStatus = async (req, res) => {
@@ -78,11 +62,6 @@ exports.getReviewStatus = async (req, res) => {
       return res.status(404).json({ message: 'Review not found' });
     }
 
-    // Check if the reviewer is authorized
-    if (review.reviewerId.toString() !== userId) {
-      return res.status(403).json({ message: 'Not authorized to view this review status' });
-    }
-
     res.status(200).json({
       status: review.status,
       lastModified: review.lastModified,
@@ -90,44 +69,6 @@ exports.getReviewStatus = async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching review status:', error);
-    res.status(500).json({ message: 'Server error', error });
-  }
-};
-
-// Update the status endpoint to set completed properly
-exports.updateReviewStatus = async (req, res) => {
-  try {
-    const { reviewId } = req.params;
-    const { status } = req.body;
-    const userId = req.user.id;
-
-    const review = await Review.findById(reviewId);
-    
-    if (!review) {
-      return res.status(404).json({ message: 'Review not found' });
-    }
-
-    // Check if the reviewer is authorized
-    if (review.reviewerId.toString() !== userId) {
-      return res.status(403).json({ message: 'Not authorized to modify this review' });
-    }
-
-    review.status = status;
-    
-    // Set reviewedAt if the status is completed
-    if (status === 'completed') {
-      review.reviewedAt = new Date();
-    }
-    
-    review.lastModified = new Date();
-    await review.save();
-
-    res.status(200).json({ 
-      message: 'Review status updated successfully',
-      review 
-    });
-  } catch (error) {
-    console.error('Error updating review status:', error);
     res.status(500).json({ message: 'Server error', error });
   }
 };
@@ -194,11 +135,30 @@ exports.saveReviewDetails = async (req, res) => {
     review.annotations = annotations || review.annotations;
     review.comments = comments || review.comments;
     review.stickyNotes = stickyNotes || review.stickyNotes;
-     review.scores = scores || {};
+    if (scores) {
+      review.scores = {
+        structure: Number(scores.structure) || 0,
+        grammar: Number(scores.grammar) || 0,
+        clarity: Number(scores.clarity) || 0,
+        content: Number(scores.content) || 0,
+        overall: Number(scores.overall) || 0,
+        feedback: scores.feedback || '',
+        summary: scores.summary || '',
+        timestamp: Date.now()
+      };
+      
+      console.log('Saving scores to review:', review.scores); // Debug log
+    }
     review.lastModified = new Date();
     
     // If there are annotations/comments/notes, set status to in-progress
-    if (annotations?.length > 0 || comments?.length > 0 || stickyNotes?.length > 0 || Object.keys(scores || {}).length > 0) {
+    if (annotations?.length > 0 || comments?.length > 0 || stickyNotes?.length > 0 || (review.scores && (
+        Number(review.scores.structure) > 0 || 
+        Number(review.scores.grammar) > 0 || 
+        Number(review.scores.clarity) > 0 || 
+        Number(review.scores.content) > 0 || 
+        Number(review.scores.overall) > 0
+      ))) {
       review.status = 'in-progress';
     }
 
@@ -225,11 +185,6 @@ exports.getReviewDetails = async (req, res) => {
       return res.status(404).json({ message: 'Review not found' });
     }
 
-    // Check if the reviewer is authorized
-    if (review.reviewerId.toString() !== userId) {
-      return res.status(403).json({ message: 'Not authorized to view this review' });
-    }
-
     res.status(200).json({
       annotations: review.annotations || [],
       comments: review.comments || [],
@@ -239,6 +194,53 @@ exports.getReviewDetails = async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching review details:', error);
+    res.status(500).json({ message: 'Server error', error });
+  }
+};
+
+// Add to reviewController.js
+exports.getReviewsByFileId = async (req, res) => {
+  try {
+    const { fileId } = req.params;
+    
+    // Find all reviews for this file
+    const reviews = await Review.find({ fileId })
+      .populate('reviewerId', 'name email') // Get reviewer details
+      .lean();
+    
+    if (!reviews || reviews.length === 0) {
+      return res.status(404).json({ message: 'No reviews found for this file' });
+    }
+    
+    // Format the review data with explicit numeric scores
+    const formattedReviews = reviews.map(review => {
+      // Ensure scores are properly converted to numbers
+      const formattedScores = review.scores ? {
+        structure: Number(review.scores.structure || 0),
+        grammar: Number(review.scores.grammar || 0),
+        clarity: Number(review.scores.clarity || 0),
+        content: Number(review.scores.content || 0),
+        overall: Number(review.scores.overall || 0),
+        feedback: review.scores.feedback || '',
+        summary: review.scores.summary || '',
+        timestamp: review.scores.timestamp
+      } : {};
+      
+      return {
+        ...review,
+        reviewerName: review.reviewerId ? `${review.reviewerId.name || review.reviewerId.email}` : 'Unknown',
+        scores: formattedScores
+      };
+    });
+    
+    console.log('Formatted reviews with scores:', formattedReviews.map(r => ({
+      id: r._id.toString().substring(0, 4),
+      scores: r.scores
+    })));
+    
+    res.status(200).json(formattedReviews);
+  } catch (error) {
+    console.error('Error fetching reviews by file ID:', error);
     res.status(500).json({ message: 'Server error', error });
   }
 };

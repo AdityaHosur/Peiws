@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import './StickyNote.css';
 
-const StickyNote = ({ note, scale, onUpdate, onDelete }) => {
+const StickyNote = ({ note, scale, onUpdate, onDelete, readOnly=false }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editedText, setEditedText] = useState(note.text);
@@ -9,6 +9,7 @@ const StickyNote = ({ note, scale, onUpdate, onDelete }) => {
   const dragOffset = useRef({ x: 0, y: 0 });
 
   const handleMouseDown = (e) => {
+    
     if (!isEditing) {
       setIsDragging(true);
       const rect = noteRef.current.getBoundingClientRect();
@@ -39,11 +40,20 @@ const StickyNote = ({ note, scale, onUpdate, onDelete }) => {
   };
 
   const handleSave = () => {
+    if (readOnly) return;
+    
     onUpdate({
       ...note,
       text: editedText
     });
     setIsEditing(false);
+  };
+
+  const handleContentClick = (e) => {
+    e.stopPropagation();
+    if (!readOnly) {
+      setIsEditing(true);
+    }
   };
 
   return (
@@ -54,7 +64,8 @@ const StickyNote = ({ note, scale, onUpdate, onDelete }) => {
         left: `${note.position.x * scale}px`,
         top: `${note.position.y * scale}px`,
         transform: `scale(${scale})`,
-        transformOrigin: 'top left'
+        transformOrigin: 'top left',
+        cursor: readOnly ? 'default' : 'move'
       }}
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
@@ -63,9 +74,14 @@ const StickyNote = ({ note, scale, onUpdate, onDelete }) => {
     >
       <div className="sticky-header">
         <span>📝</span>
-        <button onClick={() => onDelete(note.id)}>×</button>
+        {!readOnly && (
+          <button onClick={(e) => {
+            e.stopPropagation();
+            onDelete(note.id);
+          }}>×</button>
+        )}
       </div>
-      {isEditing ? (
+      {isEditing && !readOnly ? (
         <div className="sticky-edit">
           <textarea
             value={editedText}
@@ -80,12 +96,17 @@ const StickyNote = ({ note, scale, onUpdate, onDelete }) => {
       ) : (
         <div 
           className="sticky-content" 
-          onClick={(e) => {
-            e.stopPropagation();
-            setIsEditing(true);
-          }}
+          onClick={handleContentClick}
         >
           {note.text || 'Click to add text'}
+          {!readOnly && (
+            <div className="sticky-actions">
+              <button onClick={(e) => {
+                e.stopPropagation();
+                setIsEditing(true);
+              }}>Edit</button>
+            </div>
+          )}
         </div>
       )}
     </div>

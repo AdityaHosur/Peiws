@@ -35,18 +35,14 @@ const stickyNoteSchema = new mongoose.Schema({
 });
 
 const scoreSchema = new mongoose.Schema({
-  documentId: String,
-  reviewId: String,
-  scores: {
-    structure: Number,
-    grammar: Number,
-    clarity: Number,
-    content: Number,
-    overall: Number
-  },
-  feedback: String,
-  summary: String,
-  timestamp: Number
+  structure: { type: Number, min: 0, max: 5 },
+  grammar: { type: Number, min: 0, max: 5 },
+  clarity: { type: Number, min: 0, max: 5 },
+  content: { type: Number, min: 0, max: 5 },
+  overall: { type: Number, min: 0, max: 5 },
+  feedback: { type: String },
+  summary: { type: String },
+  timestamp: { type: Number, default: () => Date.now() }
 }, { _id: false });
 
 const reviewSchema = new mongoose.Schema({
@@ -56,7 +52,7 @@ const reviewSchema = new mongoose.Schema({
   annotations: [annotationSchema],
   comments: [commentSchema],
   stickyNotes: [stickyNoteSchema],
-  scores: {type: Object, default: {}},
+  scores: {type: scoreSchema, default: {}},
   reviewedAt: { type: Date },
   lastModified: { type: Date, default: Date.now }
 });

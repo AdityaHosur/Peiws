@@ -204,6 +204,34 @@ export const assignReviewersToFile = async (token, fileId, reviewers) => {
   }
 };
 
+export const getUserUploads = async (token) => {
+  try {
+    const response = await axios.get(
+      `${API_BASE_URL}/file/user-uploads`,
+      {
+        headers: { Authorization: `Bearer ${token}` }
+      }
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: 'An error occurred' };
+  }
+};
+
+export const getReviewsByFileId = async (token, fileId) => {
+  try {
+    const response = await axios.get(
+      `${API_BASE_URL}/review/file/${fileId}`,
+      {
+        headers: { Authorization: `Bearer ${token}`,'Content-Type':'application/json' }
+      }
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: 'An error occurred' };
+  }
+};
+
 export const getAssignedReviews = async (token) => {
   try {
     const response = await axios.get(`${API_BASE_URL}/review/assigned`, {
@@ -226,7 +254,7 @@ export const saveReviewDetails = async (token, reviewId, details) => {
       `${API_BASE_URL}/review/details/${reviewId}`,
       details,
       {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }
       }
     );
     return response.data;
