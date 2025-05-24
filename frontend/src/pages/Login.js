@@ -1,24 +1,26 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { loginUser } from '../services/api';
+import { useToast } from '../components/ToastContext';
 import './login.css';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const { showToast } = useToast();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       const data = await loginUser(email, password);
       localStorage.setItem('token', data.token); // Store the token in localStorage
-      alert('Login successful!');
+      showToast('Login successful!', 'success');
       navigate('/dashboard'); // Redirect to the dashboard
     } catch (err) {
       setError(err.message || 'Failed to login');
+      showToast(err.message || 'Failed to login', 'error');
     }
   };
 
@@ -49,6 +51,7 @@ const Login = () => {
               required
             />
           </div>
+          {error && <div className="error-message">{error}</div>}
           <button type="submit" className="login-button">
             Login
           </button>

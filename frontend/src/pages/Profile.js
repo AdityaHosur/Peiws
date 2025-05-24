@@ -6,6 +6,7 @@ import {
   joinOrganization,
   createOrganization,
 } from '../services/api';
+import { useToast } from '../components/ToastContext'; // Import toast hook
 import './profile.css';
 
 const Profile = () => {
@@ -17,6 +18,7 @@ const Profile = () => {
   const [description, setDescription] = useState('');
   const [error, setError] = useState('');
   const token = localStorage.getItem('token'); // Retrieve token from localStorage
+  const { showToast } = useToast(); // Use the toast hook
 
   // Fetch profile and organizations on component mount
   useEffect(() => {
@@ -30,6 +32,7 @@ const Profile = () => {
         setOrganizations(orgs.organizations);
       } catch (err) {
         setError(err.message || 'Failed to fetch data');
+        showToast(err.message || 'Failed to fetch data', 'error');
       }
     };
 
@@ -41,9 +44,11 @@ const Profile = () => {
     e.preventDefault();
     try {
       await updateProfile(token, name);
-      alert('Profile updated successfully!');
+      // Replace alert with toast
+      showToast('Profile updated successfully!', 'success');
     } catch (err) {
       setError(err.message || 'Failed to update profile');
+      showToast(err.message || 'Failed to update profile', 'error');
     }
   };
 
@@ -52,11 +57,13 @@ const Profile = () => {
     e.preventDefault();
     try {
       await createOrganization(token, orgName, description);
-      alert('Organization created successfully!');
+      // Replace alert with toast
+      showToast('Organization created successfully!', 'success');
       setOrgName('');
       setDescription('');
     } catch (err) {
       setError(err.message || 'Failed to create organization');
+      showToast(err.message || 'Failed to create organization', 'error');
     }
   };
 
@@ -65,10 +72,12 @@ const Profile = () => {
     e.preventDefault();
     try {
       await joinOrganization(token, orgName);
-      alert('Join request sent successfully!');
+      // Replace alert with toast
+      showToast('Join request sent successfully!', 'success');
       setOrgName('');
     } catch (err) {
       setError(err.message || 'Failed to join organization');
+      showToast(err.message || 'Failed to join organization', 'error');
     }
   };
 

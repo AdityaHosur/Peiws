@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getAssignedReviews, getFileStreamUrl } from '../services/api';
 import DocViewer from '../components/DocViewer';
+import { useToast } from '../components/ToastContext'; // Import the toast hook
 import './review.css';
 
 const Review = () => {
@@ -9,6 +10,7 @@ const Review = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
   const token = localStorage.getItem('token'); // Retrieve token from localStorage
+  const { showToast } = useToast(); // Use the toast hook
 
   // Fetch assigned reviews on component mount
   useEffect(() => {
@@ -22,17 +24,20 @@ const Review = () => {
         
         if (validReviews.length === 0) {
           setError('No valid reviews found.');
+          showToast('No valid reviews found.', 'info');
         }
         
         setAssignedReviews(validReviews);
       } catch (err) {
-        setError(err.message || 'Failed to fetch assigned reviews');
-      }finally {
+        const errorMessage = err.message || 'Failed to fetch assigned reviews';
+        setError(errorMessage);
+        showToast(errorMessage, 'error');
+      } finally {
         setLoading(false);
       }
     };
     fetchAssignedReviews();
-  }, [token]);
+  }, [token, showToast]);
 
   return (
     <div className="review-container">
@@ -50,7 +55,10 @@ const Review = () => {
             <li
               key={review._id}
               className={`document-item ${selectedReview?._id === review._id ? 'selected' : ''}`}
-              onClick={() => setSelectedReview(review)}
+              onClick={() => {
+                setSelectedReview(review);
+                showToast(`Viewing: ${review.fileId.filename}`, 'info');
+              }}
             >
               <span className="document-title">{review.fileId.filename}</span>
               <span className="document-tags">

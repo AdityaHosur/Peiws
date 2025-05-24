@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { uploadFile } from '../services/api';
+import { useToast } from '../components/ToastContext';
 import pdfThumbnail from '../assets/thumbnail.png'; // Placeholder for PDF thumbnail
 import './upload.css';
 
@@ -15,6 +16,7 @@ const Upload = () => {
   const [deadline, setDeadline] = useState(''); // New state for deadline
   const [error, setError] = useState('');
   const token = localStorage.getItem('token'); // Retrieve token from localStorage
+  const { showToast } = useToast(); // Use the toast hook
 
   const getTodayDate = () => {
     const today = new Date();
@@ -47,20 +49,35 @@ const Upload = () => {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(currentReviewer.trim())) {
         setError('Please enter a valid email address');
+        showToast('Please enter a valid email address', 'error');
         return;
       }
       setReviewers([...reviewers, currentReviewer.trim()]);
       setCurrentReviewer(''); // Clear the input field
+      showToast('Reviewer added successfully', 'success');
     }
   };
 
   const removeReviewer = (index) => {
     const updatedReviewers = reviewers.filter((_, i) => i !== index);
     setReviewers(updatedReviewers);
+    showToast('Reviewer removed', 'info');
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    if (!file) {
+      showToast('Please select a file to upload', 'error');
+      return;
+    }
+    
+    // Validate deadline if visibility is not organization
+    if (visibility !== 'organization' && reviewerAssignment === 'manual' && reviewers.length === 0) {
+      showToast('Please add at least one reviewer', 'error');
+      return;
+    }
+    
     try {
       const response = await uploadFile(
         token,
@@ -71,8 +88,13 @@ const Upload = () => {
         reviewers, // Send the reviewers array
         deadline
       );
-      alert('File uploaded successfully!');
+      
+      // Replace alert with toast
+      showToast('File uploaded successfully!', 'success');
+      
       console.log('Response:', response);
+      
+      // Reset form fields
       setFile(null);
       setFilePreview(null); // Clear the preview after upload
       setTags('');
@@ -80,8 +102,10 @@ const Upload = () => {
       setOrganizationName('');
       setReviewers([]); // Clear the reviewers list
       setDeadline(''); // Clear the deadline
+      setError('');
     } catch (err) {
       setError(err.message || 'Failed to upload file');
+      showToast(err.message || 'Failed to upload file', 'error');
     }
   };
 
@@ -192,6 +216,7 @@ const Upload = () => {
                       Add
                     </button>
                   </div>
+                  {error && <div className="error-message">{error}</div>}
                   <ul className="reviewer-list">
                     {reviewers.map((reviewer, index) => (
                       <li key={index} className="reviewer-item">

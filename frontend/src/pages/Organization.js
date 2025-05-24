@@ -8,6 +8,7 @@ import {
   getFilesByOrganization,
   assignReviewersToFile,
 } from '../services/api'; // Import API functions
+import { useToast } from '../components/ToastContext'; // Import toast hook
 import './organization.css';
 
 const Organization = () => {
@@ -28,6 +29,7 @@ const Organization = () => {
   const [selectedFile, setSelectedFile] = useState(null); // State to track the selected file
   const [error, setError] = useState('');
   const token = localStorage.getItem('token'); // Retrieve token from localStorage
+  const { showToast } = useToast(); // Use the toast hook
 
   // Fetch organizations on component mount
   useEffect(() => {
@@ -37,6 +39,7 @@ const Organization = () => {
         setOrganizations(data.organizations);
       } catch (err) {
         setError(err.message || 'Failed to fetch organizations');
+        showToast(err.message || 'Failed to fetch organizations', 'error');
       }
     };
     fetchOrganizations();
@@ -48,6 +51,7 @@ const Organization = () => {
         setMembers(data.members);
       } catch (err) {
         setError(err.message || 'Failed to fetch members');
+        showToast(err.message || 'Failed to fetch members', 'error');
       } finally {
         setLoadingMembers(false);
       }
@@ -62,6 +66,7 @@ const Organization = () => {
         setFiles(data);
       } catch (err) {
         setError(err.message || 'Failed to fetch files');
+        showToast(err.message || 'Failed to fetch files', 'error');
       } finally {
         setLoadingFiles(false);
       }
@@ -84,6 +89,7 @@ const Organization = () => {
 
   const handleOrgSelect = (org) => {
     setSelectedOrg(org);
+    showToast(`Selected organization: ${org.name}`, 'info');
 
     // Set default tab based on role
     if (org.role === 'Admin') {
@@ -98,7 +104,8 @@ const Organization = () => {
   const handleInvitationAction = async (email, action) => {
   try {
     await handleInvitation(token, selectedOrg.id, email, action);
-    alert(`Request ${action}ed successfully!`);
+    // Replace alert with toast
+    showToast(`Request ${action}ed successfully!`, 'success');
 
     // Update the selected organization's pending requests
     setSelectedOrg((prevOrg) => ({
@@ -107,29 +114,35 @@ const Organization = () => {
     }));
   } catch (err) {
     setError(err.message || `Failed to ${action} request`);
+    showToast(err.message || `Failed to ${action} request`, 'error');
   }
 };
+
 const handleInviteUsers = async () => {
   try {
     const emails = inviteEmails.split(',').map((email) => email.trim());
     if (emails.length === 0) {
-      alert('Please enter at least one email address');
+      // Replace alert with toast
+      showToast('Please enter at least one email address', 'error');
       return;
     }
 
     // Call the backend API to send invitations
     await inviteUsersToOrganization(token, selectedOrg.id, emails);
-    alert('Invitations sent successfully!');
+    // Replace alert with toast
+    showToast('Invitations sent successfully!', 'success');
     setInviteEmails(''); // Clear the input field
   } catch (err) {
     setError(err.message || 'Failed to send invitations');
+    showToast(err.message || 'Failed to send invitations', 'error');
   }
 };
 
 const handleRoleUpdate = async (memberId, newRole) => {
   try {
     await updateMemberRole(token, selectedOrg.id, memberId, newRole);
-    alert('Role updated successfully!');
+    // Replace alert with toast
+    showToast('Role updated successfully!', 'success');
 
     // Update the members list
     setMembers((prevMembers) =>
@@ -139,6 +152,7 @@ const handleRoleUpdate = async (memberId, newRole) => {
     );
   } catch (err) {
     setError(err.message || 'Failed to update role');
+    showToast(err.message || 'Failed to update role', 'error');
   }
 };
 
@@ -159,14 +173,20 @@ const handleAssignReviewers = async (fileId) => {
   try {
     const reviewers = selectedReviewers[fileId] || [];
     if (reviewers.length === 0) {
-      alert('Please select at least one reviewer');
+      // Replace alert with toast
+      showToast('Please select at least one reviewer', 'warning');
       return;
     }
 
     await assignReviewersToFile(token, fileId, reviewers);
-    alert('Reviewers assigned successfully!');
+    // Replace alert with toast
+    showToast('Reviewers assigned successfully!', 'success');
+    
+    // Close the modal after successful assignment
+    setSelectedFile(null);
   } catch (err) {
     setError(err.message || 'Failed to assign reviewers');
+    showToast(err.message || 'Failed to assign reviewers', 'error');
   }
 };
 

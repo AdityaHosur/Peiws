@@ -4,6 +4,7 @@ import DocViewer from '../components/DocViewer';
 import OverallScore from '../components/OverallScore';
 import NewVersionModal from '../components/NewVersionModal';
 import VersionCompare from '../components/VersionCompare';
+import { useToast } from '../components/ToastContext'; // Import toast hook
 import './view.css';
 
 const View = () => {
@@ -17,11 +18,8 @@ const View = () => {
   const [reviews, setReviews] = useState([]);
   const [selectedReview, setSelectedReview] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [comments, setComments] = useState([
-    { id: 1, version: 'v1', text: 'Improve the introduction.', status: 'pending' },
-    { id: 2, version: 'v1', text: 'Fix grammar in section 2.', status: 'pending' },
-    { id: 3, version: 'v2', text: 'Add more examples in section 3.', status: 'pending' },
-  ]);
+  const [comments, setComments] = useState([]);
+  const { showToast } = useToast(); // Use the toast hook
 
   // Fetch user's uploaded documents
   const fetchUserUploads = async () => {
@@ -47,6 +45,7 @@ const View = () => {
     } catch (err) {
       console.error('Error fetching uploads:', err);
       setError('Failed to load your documents');
+      showToast('Failed to load your documents', 'error');
     } finally {
       setLoading(false);
     }
@@ -82,6 +81,7 @@ useEffect(() => {
       }
     } catch (err) {
       console.error('Error fetching reviews:', err);
+      showToast('Failed to load reviews', 'error');
     } finally {
       setReviewsLoading(false);
     }
@@ -104,6 +104,7 @@ useEffect(() => {
 
   const handleSelectReview = (review) => {
     setSelectedReview(review);
+    showToast(`Viewing review from ${review.reviewerName || 'Reviewer'}`, 'info');
   };
 
   const handleOpenModal = async () => {
@@ -127,6 +128,7 @@ useEffect(() => {
     setIsModalOpen(true);
   } catch (error) {
     console.error('Error fetching complete document data:', error);
+    showToast('Failed to load document details', 'error');
   }
 };
 
@@ -136,7 +138,8 @@ useEffect(() => {
 
   const handleVersionUploadSuccess = (newDocData) => {
     fetchUserUploads();
-    alert('New version uploaded successfully!');
+    // Replace alert with toast
+    showToast('New version uploaded successfully!', 'success');
   };
 
   return (
@@ -157,7 +160,10 @@ useEffect(() => {
             <li 
               key={doc.id} 
               className={`document-item ${selectedDoc?.id === doc.id ? 'selected' : ''}`}
-              onClick={() => setSelectedDoc(doc)}
+              onClick={() => {
+                setSelectedDoc(doc);
+                showToast(`Selected document: ${doc.title}`, 'info');
+              }}
             >
               <span className="document-title">{doc.title}</span>
               <div className="document-details">

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Link,useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { registerUser } from '../services/api';
+import { useToast } from '../components/ToastContext';
 import './register.css';
 
 const Register = () => {
@@ -9,15 +10,17 @@ const Register = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const { showToast } = useToast();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       await registerUser(name, email, password);
-      alert('Registration successful! Please login.');
+      showToast('Registration successful! Please login.', 'success');
       navigate('/auth'); // Redirect to login page
     } catch (err) {
       setError(err.message || 'Failed to register');
+      showToast(err.message || 'Failed to register', 'error');
     }
   };
 
@@ -59,6 +62,7 @@ const Register = () => {
               required
             />
           </div>
+          {error && <div className="error-message">{error}</div>}
           <button type="submit" className="register-button">
             Register
           </button>
