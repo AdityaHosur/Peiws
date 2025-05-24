@@ -307,3 +307,93 @@ export const getReviewStatus = async (token, reviewId) => {
     throw error.response?.data || { message: 'An error occurred' };
   }
 };
+
+export const getDocumentById = async (token, fileId) => {
+  try {
+    const response = await axios.get(
+      `${API_BASE_URL}/file/${fileId}`,
+      {
+        headers: { Authorization: `Bearer ${token}` }
+      }
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: 'An error occurred' };
+  }
+};
+
+export const getDocumentVersions = async (token, fileGroupId) => {
+  try {
+    const response = await axios.get(
+      `${API_BASE_URL}/file/versions/${fileGroupId}`,
+      {
+        headers: { Authorization: `Bearer ${token}` }
+      }
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: 'An error occurred' };
+  }
+};
+
+export const uploadNewVersion = async (token, file, originalDoc, deadline) => {
+  try {
+    console.log("Original doc data for upload:", originalDoc);
+    
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('fileGroupId', originalDoc.fileGroupId);
+    
+    if (originalDoc.tags && originalDoc.tags.length > 0) {
+      formData.append('tags', JSON.stringify(originalDoc.tags));
+    }
+    
+    if (originalDoc.reviewers && originalDoc.reviewers.length > 0) {
+      if (typeof originalDoc.reviewers[0] === 'object' && originalDoc.reviewers[0].email) {
+        const reviewerEmails = originalDoc.reviewers.map(r => r.email);
+        formData.append('reviewers', JSON.stringify(reviewerEmails));
+      } else {
+        formData.append('reviewers', JSON.stringify(originalDoc.reviewers));
+      }
+    }
+    
+    formData.append('visibility', originalDoc.visibility || 'private');
+    
+    if (originalDoc.organizationName) {
+      formData.append('organizationName', originalDoc.organizationName);
+    }
+    
+    formData.append('status', originalDoc.status || 'draft');
+    
+    if (deadline) {
+      formData.append('deadline', deadline);
+    } else if (originalDoc.deadline) {
+      const deadlineValue = originalDoc.deadline instanceof Date 
+        ? originalDoc.deadline.toISOString().split('T')[0]
+        : originalDoc.deadline;
+      formData.append('deadline', deadlineValue);
+    }
+    
+    for (let [key, value] of formData.entries()) {
+      console.log(`${key}: ${value}`);
+    }
+
+    const response = await fetch(`${API_BASE_URL}/file/upload`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
+      body: formData
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to upload new version');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Upload error:', error);
+    throw error;
+  }
+};

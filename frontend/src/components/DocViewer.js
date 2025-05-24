@@ -709,7 +709,7 @@ const handleScoreSubmit = async (scoreData) => {
                 width: `${scaledPos.width}px`,
                 height: `${scaledPos.height}px`,
                 backgroundColor: annotation.color,
-                opacity: 0.8,
+                opacity: 0.9,
                 pointerEvents: 'none',
                 zIndex: 2
               });
@@ -722,7 +722,7 @@ const handleScoreSubmit = async (scoreData) => {
                   : `${scaledPos.top + scaledPos.height - 2}px`,
                 width: `${scaledPos.width}px`,
                 height: '2px',
-                backgroundColor: annotation.color,
+                backgroundColor: '#000',
                 pointerEvents: 'none',
                 zIndex: 2
               });

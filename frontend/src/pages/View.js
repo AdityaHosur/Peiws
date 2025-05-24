@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { getUserUploads, getFileStreamUrl, getReviewDetails, getReviewsByFileId } from '../services/api';
+import { getUserUploads, getFileStreamUrl, getDocumentById, getReviewsByFileId } from '../services/api';
 import DocViewer from '../components/DocViewer';
 import OverallScore from '../components/OverallScore';
+import NewVersionModal from '../components/NewVersionModal';
+import VersionCompare from '../components/VersionCompare';
 import './view.css';
 
 const View = () => {
@@ -14,6 +16,7 @@ const View = () => {
   const [reviewsLoading, setReviewsLoading] = useState(false);
   const [reviews, setReviews] = useState([]);
   const [selectedReview, setSelectedReview] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [comments, setComments] = useState([
     { id: 1, version: 'v1', text: 'Improve the introduction.', status: 'pending' },
     { id: 2, version: 'v1', text: 'Fix grammar in section 2.', status: 'pending' },
@@ -21,36 +24,38 @@ const View = () => {
   ]);
 
   // Fetch user's uploaded documents
+  const fetchUserUploads = async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      const data = await getUserUploads(token);
+      
+      // Format the documents with relevant details
+      const formattedDocs = data.map(doc => ({
+        id: doc._id,
+        title: doc.filename,
+        version: doc.version,
+        status: doc.status,
+        uploadDate: new Date(doc.createdAt || doc.updatedAt).toLocaleDateString(),
+        fileId: doc.fileId,
+        fileGroupId: doc.fileGroupId,
+        tags: doc.tags || [],
+        reviewers: doc.reviewers || []
+      }));
+      
+      setUserDocuments(formattedDocs);
+    } catch (err) {
+      console.error('Error fetching uploads:', err);
+      setError('Failed to load your documents');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchUserUploads = async () => {
-      setLoading(true);
-      try {
-        const token = localStorage.getItem('token');
-        const data = await getUserUploads(token);
-        
-        // Format the documents with relevant details
-        const formattedDocs = data.map(doc => ({
-          id: doc._id,
-          title: doc.filename,
-          version: doc.version,
-          status: doc.status,
-          uploadDate: new Date(doc.createdAt || doc.updatedAt).toLocaleDateString(),
-          fileId: doc.fileId,
-          tags: doc.tags || [],
-          reviewers: doc.reviewers || []
-        }));
-        
-        setUserDocuments(formattedDocs);
-      } catch (err) {
-        console.error('Error fetching uploads:', err);
-        setError('Failed to load your documents');
-      } finally {
-        setLoading(false);
-      }
-    };
-    
     fetchUserUploads();
   }, []);
+
 
   // Fetch reviews for the selected document
   // Update the fetchReviews function
@@ -101,6 +106,39 @@ useEffect(() => {
     setSelectedReview(review);
   };
 
+  const handleOpenModal = async () => {
+  if (!selectedDoc) return;
+  
+  try {
+    const token = localStorage.getItem('token');
+    const completeDocData = await getDocumentById(token, selectedDoc.id);
+    
+    const completeDoc = {
+      ...selectedDoc,
+      tags: completeDocData.tags || [],
+      reviewers: completeDocData.reviewers || [],
+      visibility: completeDocData.visibility || 'private',
+      organizationName: completeDocData.organizationName || null,
+      status: completeDocData.status || 'draft',
+      deadline: completeDocData.deadline
+    };
+    setSelectedDoc(completeDoc);
+    console.log("Complete document data for new version:", completeDoc);
+    setIsModalOpen(true);
+  } catch (error) {
+    console.error('Error fetching complete document data:', error);
+  }
+};
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+  };
+
+  const handleVersionUploadSuccess = (newDocData) => {
+    fetchUserUploads();
+    alert('New version uploaded successfully!');
+  };
+
   return (
     <div className="view-container">
       {/* Left Card: User's Uploaded Documents */}
@@ -147,6 +185,16 @@ useEffect(() => {
 
       {/* Right Card: Content Area */}
       <div className="view-card content-area">
+        {selectedDoc && (
+          <div className="document-actions">
+            <button 
+              className="upload-version-button" 
+              onClick={handleOpenModal}
+            >
+              Upload New Version
+            </button>
+          </div>
+        )}
         {/* Segmented Button */}
         <div className="segmented-control">
           <button 
@@ -185,21 +233,10 @@ useEffect(() => {
               )}
 
               {activeTab === 'compare' && (
-                <div className="compare-section">
-                  <h3 className="content-title">
-                    Compare Versions for {selectedDoc.title}
-                  </h3>
-                  <div className="versions-container">
-                    <div className="version">
-                      <h3>Version 1</h3>
-                      <p>This is the content of Version 1.</p>
-                    </div>
-                    <div className="version">
-                      <h3>Version 2</h3>
-                      <p>This is the content of Version 2 with additional examples.</p>
-                    </div>
-                  </div>
-                </div>
+                <VersionCompare 
+                  fileGroupId={selectedDoc.fileGroupId}
+                  documentTitle={selectedDoc.title}
+                />
               )}
               
               {activeTab === 'preview' && (
@@ -327,6 +364,14 @@ useEffect(() => {
           )}
         </div>
       </div>
+      {selectedDoc && (
+        <NewVersionModal 
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+          originalDoc={selectedDoc}
+          onSuccess={handleVersionUploadSuccess}
+        />
+      )}
     </div>
   );
 };

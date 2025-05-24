@@ -1,0 +1,251 @@
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal-content {
+  background-color: white;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+  animation: slideUp 0.3s ease;
+}
+
+body.dark-mode .modal-content {
+  background-color: #222;
+  color: #eee;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(30px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid #eee;
+}
+
+body.dark-mode .modal-header {
+  border-color: #444;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #333;
+}
+
+body.dark-mode .modal-header h2 {
+  color: #eee;
+}
+
+.close-button {
+  background: transparent;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #666;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  transition: all 0.2s;
+}
+
+.close-button:hover {
+  background-color: #f1f1f1;
+  color: #333;
+}
+
+body.dark-mode .close-button {
+  color: #aaa;
+}
+
+body.dark-mode .close-button:hover {
+  background-color: #444;
+  color: #eee;
+}
+
+.modal-body {
+  padding: 20px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.cancel-button {
+  background-color: #f1f1f1;
+  color: #333;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.cancel-button:hover {
+  background-color: #e0e0e0;
+}
+
+body.dark-mode .cancel-button {
+  background-color: #444;
+  color: #eee;
+}
+
+body.dark-mode .cancel-button:hover {
+  background-color: #555;
+}
+
+.upload-button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.upload-button:hover {
+  background-color: #0069d9;
+}
+
+.upload-button:disabled {
+  background-color: #80bdff;
+  cursor: not-allowed;
+}
+
+body.dark-mode .upload-button:disabled {
+  background-color: #2a5a8a;
+}
+
+/* Upload Drag Box Styles */
+.upload-drag-box {
+  border: 2px dashed #007bff;
+  border-radius: 8px;
+  padding: 30px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.3s, background-color 0.3s;
+  background-color: #f8f9fa;
+  color: #333;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 120px;
+  margin-bottom: 20px;
+}
+
+body.dark-mode .upload-drag-box {
+  background-color: #333;
+  color: #eee;
+  border-color: #4a90e2;
+}
+
+.upload-drag-box:hover {
+  border-color: #0056b3;
+  background-color: rgba(0, 123, 255, 0.05);
+}
+
+body.dark-mode .upload-drag-box:hover {
+  background-color: rgba(74, 144, 226, 0.1);
+}
+
+.upload-drag-box p {
+  margin: 0;
+}
+
+.upload-drag-box input[type="file"] {
+  display: none;
+}
+
+.file-preview {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.file-name {
+  margin-top: 8px;
+  font-size: 0.9rem;
+  color: #555;
+  text-align: center;
+  word-break: break-word;
+}
+
+body.dark-mode .file-name {
+  color: #aaa;
+}
+
+.thumbnail {
+  max-width: 100%;
+  max-height: 80px;
+  object-fit: contain;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+body.dark-mode .thumbnail {
+  border-color: #555;
+}
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+input[type="date"] {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+body.dark-mode input[type="date"] {
+  background-color: #333;
+  border-color: #555;
+  color: #eee;
+}
+
+.error-message {
+  color: #dc3545;
+  margin-top: 8px;
+  font-size: 0.9rem;
+}

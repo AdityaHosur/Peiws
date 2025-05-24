@@ -1,4 +1,5 @@
 const { getGridFSBucket } = require('../config/gridfs');
+const {generatePdfDiff} = require('../utils/pdfdiff');
 const User = require('../models/User');
 const Upload = require('../models/Upload');
 const Review = require('../models/Review');
@@ -30,12 +31,25 @@ exports.uploadFile = async (req, res) => {
           fileGroupId = new mongoose.Types.ObjectId();
         }
 
+        let tags = [];
+        if (req.body.tags) {
+          try {
+            tags = JSON.parse(req.body.tags);
+            console.log('Parsed tags:', tags);
+          } catch (error) {
+            console.error('Error parsing tags:', error);
+            // If parsing fails, use as-is or empty array
+            tags = req.body.tags || [];
+          }
+        }
+
         // Convert reviewers string to array if it exists
         let reviewerIds = [];
         console.log('Reviewers before:', req.body.reviewers);
-        try {
-          // Parse the JSON string if it exists
-          const parsedReviewers = JSON.parse(req.body.reviewers);
+        if (req.body.reviewers) {
+          try {
+            // Parse the JSON string if it exists
+            const parsedReviewers = JSON.parse(req.body.reviewers);
             if (Array.isArray(parsedReviewers)) {
               // Find user IDs by email addresses
               const reviewerPromises = parsedReviewers.map(async (email) => {
@@ -49,8 +63,9 @@ exports.uploadFile = async (req, res) => {
               reviewerIds = resolvedReviewerIds;
               console.log('Parsed reviewerIds:', reviewerIds);
             }
-        } catch (error) {
-          console.error('Error parsing reviewers:', error);
+          } catch (error) {
+            console.error('Error parsing reviewers:', error);
+          }
         }
         
         // Get the latest version number for the fileGroupId
@@ -68,7 +83,7 @@ exports.uploadFile = async (req, res) => {
           filename: req.file.originalname, // Original filename
           version: newVersion, // Increment version number
           uploader: req.user.id, // Authenticated user ID
-          tags: req.body.tags || [], // Tags from the request body
+          tags: tags || [], // Tags from the request body
           reviewers: reviewerIds || [], // Reviewers from the request body
           visibility: req.body.visibility || 'private', // Visibility from the request body
           organizationName: req.body.visibility === 'organization' ? req.body.organizationName : null, // Add organization name if visibility is "organization"
@@ -171,6 +186,53 @@ exports.downloadFile = (req, res) => {
   }
 };
 
+exports.getDocumentById = async (req, res) => {
+  try {
+    const { fileId } = req.params;
+    
+    // Find the document
+    const document = await Upload.findById(fileId)
+      .populate('reviewers', 'name email')
+      .lean();
+    
+    if (!document) {
+      return res.status(404).json({ message: 'Document not found' });
+    }
+    
+    // Check if the user has permission to view this document
+    if (document.uploader.toString() !== req.user.id && 
+        document.visibility === 'private' &&
+        !document.reviewers.some(r => r._id.toString() === req.user.id)) {
+      return res.status(403).json({ message: 'You do not have permission to view this document' });
+    }
+    
+    res.status(200).json(document);
+  } catch (error) {
+    console.error('Error fetching document:', error);
+    res.status(500).json({ message: 'Server error', error });
+  }
+};
+
+exports.getDocumentVersions = async (req, res) => {
+  try {
+    const { fileGroupId } = req.params;
+    
+    // Find all versions of the document
+    const versions = await Upload.find({ fileGroupId })
+      .sort({ version: -1 })
+      .lean();
+    
+    if (!versions || versions.length === 0) {
+      return res.status(404).json({ message: 'No versions found for this document' });
+    }
+    
+    res.status(200).json(versions);
+  } catch (error) {
+    console.error('Error fetching document versions:', error);
+    res.status(500).json({ message: 'Server error', error });
+  }
+};
+
 exports.getFilesByOrganization = async (req, res) => {
   try {
     const { organizationName } = req.params;
@@ -225,5 +287,55 @@ exports.assignReviewers = async (req, res) => {
     res.status(200).json({ message: 'Reviewers assigned successfully and review records created', file });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error });
+  }
+};
+
+exports.getDocumentDiff = async (req, res) => {
+  // Declare the timeout variable at the function scope level
+  let pdfGenerationTimeout;
+  
+  try {
+    const { leftId, rightId, highlight = 'true' } = req.query;
+    const showHighlights = highlight !== 'false';
+    
+    console.log(`Diff request for leftId=${leftId}, rightId=${rightId}, highlight=${highlight}`);
+    
+    if (!leftId || !rightId) {
+      return res.status(400).json({ message: 'Both document IDs are required' });
+    }
+  
+    // Set the timeout
+    pdfGenerationTimeout = setTimeout(() => {
+      console.error('PDF generation timed out after 30 seconds');
+      res.status(500).json({
+        message: 'PDF generation timed out',
+        error: 'The operation took too long to complete. Please try with smaller documents.'
+      });
+    }, 30000); // 30 second timeout
+
+    // Generate the PDF diff using our utility
+    const diffPdfBuffer = await generatePdfDiff(leftId, rightId, showHighlights);
+    
+    // Clear the timeout since we completed successfully
+    clearTimeout(pdfGenerationTimeout);
+  
+    // Send the diff PDF as a response
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'inline; filename="document_diff.pdf"');
+    res.send(diffPdfBuffer);
+  } catch (diffError) {
+    console.error('Error in diff generation:', diffError.message);
+    
+    // Clear the timeout since we have an answer (even if it's an error)
+    if (pdfGenerationTimeout) {
+      clearTimeout(pdfGenerationTimeout);
+    }
+    
+    // Return a proper error response
+    res.status(500).json({ 
+      message: 'Error generating document comparison', 
+      error: diffError.message,
+      details: 'The system was unable to compare these documents. This could be due to file format issues or document structure.'
+    });
   }
 };
