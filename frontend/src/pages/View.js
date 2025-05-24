@@ -34,7 +34,7 @@ const View = () => {
         title: doc.filename,
         version: doc.version,
         status: doc.status,
-        uploadDate: new Date(doc.createdAt || doc.updatedAt).toLocaleDateString(),
+        uploadDate: doc.uploadedAt,
         fileId: doc.fileId,
         fileGroupId: doc.fileGroupId,
         tags: doc.tags || [],
@@ -165,24 +165,35 @@ useEffect(() => {
                 showToast(`Selected document: ${doc.title}`, 'info');
               }}
             >
+              <div className="document-row">
               <span className="document-title">{doc.title}</span>
-              <div className="document-details">
-                <span className="document-version">Version: {doc.version}</span>
-                <span className="document-date">Uploaded: {doc.uploadDate}</span>
-              </div>
-              <div className="document-tags">
-                {doc.tags.length > 0 ? 
-                  doc.tags.map((tag, index) => (
-                    <span key={index} className="tag">{tag}</span>
-                  )) : 
-                  <span className="no-tags">No tags</span>
-                }
-              </div>
-              <span className={`document-status status-${doc.status.toLowerCase()}`}>
-                {doc.status}
+              <span className="document-version">Version: {doc.version}</span>
+              <span className="document-date">
+                Uploaded: {new Date(doc.uploadDate).toLocaleDateString(undefined, {
+                  year: 'numeric',
+                  month: 'short',
+                  day: 'numeric',
+                })}
               </span>
-              <div className="reviewer-count">
-                <span>Reviewers: {doc.reviewers.length}</span>
+            </div>
+              <div className="document-row">
+                <div className="document-tags">
+                {doc.tags.length > 0 ? (
+                  doc.tags
+                    .join(',')
+                    .split(',')
+                    .map((tag, index) => (
+                      <span key={index} className="tag">
+                        {tag.trim()}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="no-tags">No tags</span>
+                  )}
+                </div>
+                <div className="reviewer-count">
+                  <span>Reviewers: {doc.reviewers.length}</span>
+                </div>
               </div>
             </li>
           ))}

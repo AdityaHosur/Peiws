@@ -220,30 +220,6 @@ const handleAssignReviewers = async (fileId) => {
           )}
         </div>
 
-        {/* Reviewer Organizations */}
-        <div className="role-section">
-          <div className="role-header" onClick={() => toggleSection('reviewer')}>
-            <h3>Reviewer</h3>
-            <span className={`toggle-icon ${expandedSections.reviewer ? 'expanded' : ''}`}>
-              {expandedSections.reviewer ? '▼' : '►'}
-            </span>
-          </div>
-          {expandedSections.reviewer && (
-            <ul className="role-organizations-list">
-              {reviewerOrgs.map((org) => (
-                <li
-                  key={org.id}
-                  className={`organization-item ${selectedOrg?.id === org.id ? 'selected' : ''}`}
-                  onClick={() => handleOrgSelect(org)}
-                >
-                  <span className="organization-name">{org.name}</span>
-                </li>
-              ))}
-              {reviewerOrgs.length === 0 && <li className="no-orgs">No reviewer roles</li>}
-            </ul>
-          )}
-        </div>
-
         {/* Member Organizations */}
         <div className="role-section">
           <div className="role-header" onClick={() => toggleSection('member')}>

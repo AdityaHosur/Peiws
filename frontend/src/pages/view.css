@@ -18,12 +18,6 @@ body.dark-mode .view-card {
   color: var(--text-dark);
 }
 
-/* Left card - Documents list */
-.docs-list {
-  flex: 0 0 30%;
-  max-height: 72vh;
-  overflow-y: auto;
-}
 
 /* Right card - Content area */
 .content-area {
@@ -46,53 +40,7 @@ body.dark-mode .view-card {
   font-size: 1.4rem;
 }
 
-/* Document list styling */
-.documents-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
 
-.document-item {
-  display: flex;
-  flex-direction: column;
-  padding: 0.8rem;
-  border-bottom: 1px solid var(--accent-light);
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.document-item:hover {
-  background-color: rgba(224, 201, 127, 0.2);
-}
-
-.document-item.selected {
-  background-color: var(--accent-light);
-  color: var(--text-dark);
-}
-
-body.dark-mode .document-item {
-  border-bottom: 1px solid var(--accent-dark);
-}
-
-body.dark-mode .document-item:hover {
-  background-color: rgba(68, 68, 68, 0.3);
-}
-
-body.dark-mode .document-item.selected {
-  background-color: var(--accent-dark);
-  color: var(--text-light);
-}
-
-.document-title {
-  font-weight: bold;
-  margin-bottom: 0.3rem;
-}
-
-.document-status {
-  font-size: 0.85rem;
-  font-style: italic;
-}
 
 /* Segmented control for switching tabs */
 .segmented-control {
@@ -671,62 +619,7 @@ body.dark-mode .reviewer-button.active {
   color: white;
 }
 
-/* Better document list */
-.document-item {
-  background-color: white;
-  border-radius: 6px;
-  padding: 12px;
-  margin-bottom: 10px;
-  border: 1px solid #eaeaea;
-  transition: all 0.2s ease;
-  cursor: pointer;
-}
 
-.document-item:hover {
-  background-color: #f5f5f5;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.05);
-}
-
-.document-item.selected {
-  background-color: #e6f2ff;
-  border-color: #b3d7ff;
-}
-
-body.dark-mode .document-item {
-  background-color: #333;
-  border-color: #444;
-}
-
-body.dark-mode .document-item:hover {
-  background-color: #3a3a3a;
-}
-
-body.dark-mode .document-item.selected {
-  background-color: #1a3a5f;
-  border-color: #2c5885;
-}
-
-.document-title {
-  font-size: 1.1rem;
-  font-weight: 600;
-  margin-bottom: 6px;
-  color: #333;
-}
-
-body.dark-mode .document-title {
-  color: #eee;
-}
-
-.document-details, .reviewer-count {
-  font-size: 0.85rem;
-  color: #666;
-}
-
-body.dark-mode .document-details, 
-body.dark-mode .reviewer-count {
-  color: #aaa;
-}
 
 /* Better empty states */
 .no-selection, .select-document-prompt, .no-reviewers-message {
@@ -799,7 +692,130 @@ body.dark-mode .upload-version-button {
 body.dark-mode .upload-version-button:hover {
   background-color: #218838;
 }
+/* Document list styling */
+.documents-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
 
+.document-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 15px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  border-left: 4px solid transparent;
+  background-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.document-item:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+  background-color: rgba(255, 255, 255, 0.12);
+}
+
+.document-item.selected {
+  border-left-color: #2196f3;
+  background-color: rgba(33, 150, 243, 0.1);
+}
+
+body.dark-mode .document-item {
+  background-color: rgba(40, 40, 40, 0.4);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+body.dark-mode .document-item:hover {
+  background-color: rgba(50, 50, 50, 0.5);
+}
+
+body.dark-mode .document-item.selected {
+  background-color: rgba(33, 150, 243, 0.2);
+}
+
+/* Document row layout */
+.document-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Document title styling */
+.document-title {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--text-light);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+body.dark-mode .document-title {
+  color: var(--text-dark);
+}
+
+/* Document version styling */
+.document-version {
+  font-size: 0.9rem;
+  color: #666;
+  font-weight: 500;
+}
+
+body.dark-mode .document-version {
+  color: #aaa;
+}
+
+/* Document upload date styling */
+.document-date {
+  font-size: 0.9rem;
+  color: #666;
+  font-weight: 500;
+}
+
+body.dark-mode .document-date {
+  color: #aaa;
+}
+
+/* Document tags styling */
+.document-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tag {
+  color: #2196f3;
+  background-color: rgba(33, 150, 243, 0.12);
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.no-tags {
+  color: #888;
+  font-style: italic;
+  font-size: 0.85rem;
+}
+
+body.dark-mode .tag {
+  background-color: rgba(33, 150, 243, 0.25);
+}
+
+/* Reviewer count styling */
+.reviewer-count {
+  font-size: 0.9rem;
+  color: #666;
+  font-weight: 500;
+}
+
+body.dark-mode .reviewer-count {
+  color: #aaa;
+}
 /* Improved mobile responsiveness */
 @media (max-width: 768px) {
   .view-container {
