@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getUserUploads, getFileStreamUrl, getReviewDetails, getReviewsByFileId } from '../services/api';
 import DocViewer from '../components/DocViewer';
+import OverallScore from '../components/OverallScore';
 import './view.css';
 
 const View = () => {
@@ -149,10 +150,10 @@ useEffect(() => {
         {/* Segmented Button */}
         <div className="segmented-control">
           <button 
-            className={`segment-button ${activeTab === 'comments' ? 'active' : ''}`}
-            onClick={() => setActiveTab('comments')}
+            className={`segment-button ${activeTab === 'overall' ? 'active' : ''}`}
+            onClick={() => setActiveTab('overall')}
           >
-            Comments
+            Overall Score
           </button>
           <button 
             className={`segment-button ${activeTab === 'compare' ? 'active' : ''}`}
@@ -176,43 +177,11 @@ useEffect(() => {
             </div>
           ) : (
             <>
-              {activeTab === 'comments' && (
-                <div className="comments-section">
-                  <h3 className="content-title">
-                    Comments for {selectedDoc.title}
-                  </h3>
-                  <div className="form-group">
-                    <label htmlFor="version">Select Version</label>
-                    <select id="version" value={selectedVersion} onChange={handleVersionChange}>
-                      <option value="v1">Version 1</option>
-                      <option value="v2">Version 2</option>
-                    </select>
-                  </div>
-                  <ul className="comment-list">
-                    {comments
-                      .filter((comment) => comment.version === selectedVersion)
-                      .map((comment) => (
-                        <li key={comment.id} className="comment-item">
-                          <p>{comment.text}</p>
-                          <div className="comment-actions">
-                            <button
-                              className="accept-button"
-                              onClick={() => handleFeedbackAction(comment.id, 'accepted')}
-                            >
-                              Accept
-                            </button>
-                            <button
-                              className="reject-button"
-                              onClick={() => handleFeedbackAction(comment.id, 'rejected')}
-                            >
-                              Reject
-                            </button>
-                          </div>
-                          <span className={`status ${comment.status}`}>{comment.status}</span>
-                        </li>
-                      ))}
-                  </ul>
-                </div>
+              {activeTab === 'overall' && (
+                <OverallScore 
+                  reviews={reviews} 
+                  documentTitle={selectedDoc.title} 
+                />
               )}
 
               {activeTab === 'compare' && (
@@ -261,83 +230,82 @@ useEffect(() => {
                           )}
                         </div>
                       </div>
-// Replace the score table with this more visually appealing version
-{selectedReview ? (
-  <div className='review-content'>
-    {console.log("Review data:", selectedReview)}
-    {selectedReview.scores && (
-      <div className="evaluation-summary">
-        <h4>Reviewer Evaluation</h4>
-        <div className="scores-container">
-          <h5>Scores</h5>
-          <div className="score-visual-grid">
-            {[
-              { key: 'structure', label: 'Structure', icon: '📝' },
-              { key: 'grammar', label: 'Grammar', icon: '🔤' },
-              { key: 'clarity', label: 'Clarity', icon: '💡' },
-              { key: 'content', label: 'Content', icon: '📚' },
-              { key: 'overall', label: 'Overall', icon: '⭐' }
-            ].map(({ key, label, icon }) => {
-              const score = Number(selectedReview.scores[key] || 0);
-              const color = score <= 2 ? '#ff5252' : score <= 3 ? '#ffca28' : score <= 4 ? '#66bb6a' : '#42a5f5';
-              return (
-                <div key={key} className="score-card">
-                  <div className="score-card-header">
-                    <span className="score-icon">{icon}</span>
-                    <span className="score-label">{label}</span>
-                  </div>
-                  <div className="score-value-display">{score}/5</div>
-                  <div className="score-bar-container">
-                    <div 
-                      className="score-bar" 
-                      style={{
-                        width: `${(score / 5) * 100}%`,
-                        backgroundColor: color
-                      }}
-                    ></div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-        
-        {(selectedReview.scores.summary || selectedReview.scores.feedback) && (
-          <div className="review-text-container">
-            {selectedReview.scores.summary && (
-              <div className="review-summary">
-                <h5><span className="review-icon">📋</span> Summary</h5>
-                <div className="review-content-box">
-                  <p>{selectedReview.scores.summary}</p>
-                </div>
-              </div>
-            )}
-            
-            {selectedReview.scores.feedback && (
-              <div className="review-feedback">
-                <h5><span className="review-icon">💬</span> Detailed Feedback</h5>
-                <div className="review-content-box">
-                  <p>{selectedReview.scores.feedback}</p>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-    )}
-    <div className="document-preview">
-      <DocViewer 
-        fileUrl={getFileStreamUrl(selectedDoc.fileId)} 
-        reviewId={selectedReview._id}
-        readOnly={true}
-      />
-    </div>
-  </div>
-) : (
-  <div className="no-selection">
-    <p>Select a reviewer to see their annotations</p>
-  </div>
-)}
+                      {selectedReview ? (
+                        <div className='review-content'>
+                          {console.log("Review data:", selectedReview)}
+                          {selectedReview.scores && (
+                            <div className="evaluation-summary">
+                              <h4>Reviewer Evaluation</h4>
+                              <div className="scores-container">
+                                <h5>Scores</h5>
+                                <div className="score-visual-grid">
+                                  {[
+                                    { key: 'structure', label: 'Structure', icon: '📝' },
+                                    { key: 'grammar', label: 'Grammar', icon: '🔤' },
+                                    { key: 'clarity', label: 'Clarity', icon: '💡' },
+                                    { key: 'content', label: 'Content', icon: '📚' },
+                                    { key: 'overall', label: 'Overall', icon: '⭐' }
+                                  ].map(({ key, label, icon }) => {
+                                    const score = Number(selectedReview.scores[key] || 0);
+                                    const color = score <= 2 ? '#ff5252' : score <= 3 ? '#ffca28' : score <= 4 ? '#66bb6a' : '#42a5f5';
+                                    return (
+                                      <div key={key} className="score-card">
+                                        <div className="score-card-header">
+                                          <span className="score-icon">{icon}</span>
+                                          <span className="score-label">{label}</span>
+                                        </div>
+                                        <div className="score-value-display">{score}/5</div>
+                                        <div className="score-bar-container">
+                                          <div 
+                                            className="score-bar" 
+                                            style={{
+                                              width: `${(score / 5) * 100}%`,
+                                              backgroundColor: color
+                                            }}
+                                          ></div>
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                              
+                              {(selectedReview.scores.summary || selectedReview.scores.feedback) && (
+                                <div className="review-text-container">
+                                  {selectedReview.scores.summary && (
+                                    <div className="review-summary">
+                                      <h5><span className="review-icon">📋</span> Summary</h5>
+                                      <div className="review-content-box">
+                                        <p>{selectedReview.scores.summary}</p>
+                                      </div>
+                                    </div>
+                                  )}
+                                  
+                                  {selectedReview.scores.feedback && (
+                                    <div className="review-feedback">
+                                      <h5><span className="review-icon">💬</span> Detailed Feedback</h5>
+                                      <div className="review-content-box">
+                                        <p>{selectedReview.scores.feedback}</p>
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          )}
+                          <div className="document-preview">
+                            <DocViewer 
+                              fileUrl={getFileStreamUrl(selectedDoc.fileId)} 
+                              reviewId={selectedReview._id}
+                              readOnly={true}
+                            />
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="no-selection">
+                          <p>Select a reviewer to see their annotations</p>
+                        </div>
+                      )}
                     </div>
                   ) : (
                     <div className="document-preview">
