@@ -30,24 +30,26 @@ body.dark-mode .view-card {
 
 .view-title {
   font-size: 1.5rem;
-  margin-bottom: 1rem;
   text-align: center;
 }
 
 .content-title {
-  margin-bottom: 1.5rem;
   text-align: center;
   font-size: 1.4rem;
+  margin: 0;
 }
-
-
 
 /* Segmented control for switching tabs */
 .segmented-control {
   display: flex;
   justify-content: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0;
   gap: 0.5rem;
+  flex: 1;
+}
+.controls-row {
+  display: flex;
+  align-items: center;
 }
 
 .segment-button {
@@ -180,7 +182,6 @@ body.dark-mode .version {
   background-color: var(--primary-dark);
 }
 
-/* Add to d:\coding\Peiws\frontend\src\pages\view.css */
 .loading-message, .empty-message {
   text-align: center;
   color: #666;
@@ -293,7 +294,6 @@ body.dark-mode .segment-button.active {
   color: white;
 }
 
-/* Add to view.css */
 .reviews-container {
   display: flex;
   flex-direction: column;
@@ -357,7 +357,7 @@ body.dark-mode .segment-button.active {
 .evaluation-summary {
   margin-bottom: 20px;
   padding: 16px;
-  background-color: #f9f9f9;
+  background-color: var(--accent-light);
   border: 1px solid #e0e0e0;
   border-radius: 6px;
 }
@@ -528,7 +528,7 @@ body.dark-mode .review-content-box p {
 .preview-section {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  
 }
 
 .evaluation-summary {
@@ -599,7 +599,7 @@ body.dark-mode .scores-container h5 {
 }
 
 .reviewer-button.active {
-  background-color: #007bff;
+  background-color: var(--accent-light);
   color: white;
   border-color: #0056b3;
 }
@@ -615,7 +615,7 @@ body.dark-mode .reviewer-button:hover {
 }
 
 body.dark-mode .reviewer-button.active {
-  background-color: #0d6efd;
+  background-color: var(--accent-light);
   color: white;
 }
 
@@ -664,33 +664,36 @@ body.dark-mode .view-card {
 .document-actions {
   display: flex;
   justify-content: flex-end;
-  margin-bottom: 16px;
+  margin-bottom: 0;
 }
 
 .upload-version-button {
-  background-color: #28a745;
-  color: white;
+  padding: 0.7rem 1rem;
+  background-color: var(--success-light);
+  color: var(--text-dark);
   border: none;
   border-radius: 4px;
-  padding: 8px 16px;
-  font-size: 14px;
+  font-size: 1rem;
   font-weight: 500;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  transition: background-color 0.2s;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  margin-bottom: 1.3rem;
 }
 
 .upload-version-button:hover {
-  background-color: #218838;
+  background-color: var(--success-dark);
+  color: var(--text-light);
 }
 
 body.dark-mode .upload-version-button {
-  background-color: #28a745;
+  background-color: var(--success-dark);
+  color: var(--text-light);
 }
 
 body.dark-mode .upload-version-button:hover {
-  background-color: #218838;
+  background-color: var(--success-light);
+  color: var(--text-dark);
 }
 /* Document list styling */
 .documents-list {
@@ -822,7 +825,21 @@ body.dark-mode .reviewer-count {
     flex-direction: column;
     padding: 16px;
   }
-  
+  .controls-row {
+    flex-direction: column;
+    gap: 1rem;
+  }
+   .document-actions {
+    display: flex;
+    align-items: center;
+    margin: 0;
+    order: 1;
+    width: 100%;
+  }
+
+  .upload-version-button {
+    width: 100%;
+  }
   .docs-list, .content-area {
     width: 100%;
     max-width: 100%;
@@ -834,7 +851,7 @@ body.dark-mode .reviewer-count {
   }
   
   .segmented-control {
-    flex-wrap: wrap;
+    order: 2;
   }
   
   .segment-button {

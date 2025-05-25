@@ -202,38 +202,39 @@ useEffect(() => {
 
       {/* Right Card: Content Area */}
       <div className="view-card content-area">
-        {selectedDoc && (
-          <div className="document-actions">
+        {/* Segmented Button */}
+        <div className="controls-row">
+          <div className="segmented-control">
             <button 
-              className="upload-version-button" 
-              onClick={handleOpenModal}
+              className={`segment-button ${activeTab === 'overall' ? 'active' : ''}`}
+              onClick={() => setActiveTab('overall')}
             >
-              Upload New Version
+              Overall Score
+            </button>
+            <button 
+              className={`segment-button ${activeTab === 'compare' ? 'active' : ''}`}
+              onClick={() => setActiveTab('compare')}
+            >
+              Compare Versions
+            </button>
+            <button 
+              className={`segment-button ${activeTab === 'preview' ? 'active' : ''}`}
+              onClick={() => setActiveTab('preview')}
+            >
+              Preview Document
             </button>
           </div>
-        )}
-        {/* Segmented Button */}
-        <div className="segmented-control">
-          <button 
-            className={`segment-button ${activeTab === 'overall' ? 'active' : ''}`}
-            onClick={() => setActiveTab('overall')}
-          >
-            Overall Score
-          </button>
-          <button 
-            className={`segment-button ${activeTab === 'compare' ? 'active' : ''}`}
-            onClick={() => setActiveTab('compare')}
-          >
-            Compare Versions
-          </button>
-          <button 
-            className={`segment-button ${activeTab === 'preview' ? 'active' : ''}`}
-            onClick={() => setActiveTab('preview')}
-          >
-            Preview Document
-          </button>
+          {selectedDoc && (
+            <div className="document-actions">
+              <button 
+                className="upload-version-button" 
+                onClick={handleOpenModal}
+              >
+                Upload New Version
+              </button>
+            </div>
+          )}
         </div>
-
         {/* Content Display */}
         <div className="tab-content">
           {!selectedDoc ? (

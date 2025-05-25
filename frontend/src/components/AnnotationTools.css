@@ -1,83 +1,215 @@
+/* Toolbar container */
 .annotation-toolbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 10px;
-  background-color: #f8f9fa;
+  background-color: var(--primary-light); /* Use theme color */
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   margin-bottom: 15px;
   flex-wrap: wrap;
+  gap: 10px;
+  transition: background-color 0.3s, color 0.3s;
 }
 
+body.dark-mode .annotation-toolbar {
+  background-color: var(--primary-dark); /* Use theme color */
+}
+
+/* Toolbar sections */
 .toolbar-section {
   display: flex;
-  gap: 8px;
+  gap: 10px;
   align-items: center;
+  flex-wrap: wrap;
 }
 
 .tools {
   flex: 3;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 .actions {
   flex: 2;
+  display: flex;
   justify-content: flex-end;
+  gap: 10px;
 }
 
+/* Tool button styling */
 .tool-button {
   display: flex;
   align-items: center;
   gap: 6px;
   padding: 8px 12px;
-  border: 1px solid #dee2e6;
+  border: 1px solid var(--border-light);
   border-radius: 6px;
-  background-color: white;
-  color: #212529;
+  background-color: var(--surface-light);
+  color: var(--text-light);
   cursor: pointer;
   transition: all 0.2s ease;
   font-size: 14px;
+  box-shadow: 0 1px 2px var(--shadow-light);
+}
+
+body.dark-mode .tool-button {
+  background-color: var(--surface-dark);
+  color: var(--text-dark);
+  border-color: var(--border-dark);
+  box-shadow: 0 1px 2px var(--shadow-dark);
 }
 
 .tool-button:hover:not(:disabled) {
-  background-color: #e9ecef;
+  background-color: var(--accent-light-hover);
+  color: var(--text-dark);
+  border-color: var(--accent-light);
+}
+
+.actions .tool-button {
+  background-color: var(--accent-light);
+  color: var(--text-dark);
+  border-color: var(--accent-light);
+}
+
+body.dark-mode .actions .tool-button {
+  background-color: var(--accent-dark);
+  color: var(--text-light);
+  border-color: var(--accent-dark);
+}
+
+.actions .tool-button:hover:not(:disabled) {
+  background-color: var(--accent-light-hover);
+  color: var(--text-dark);
+}
+
+body.dark-mode .actions .tool-button:hover:not(:disabled) {
+  background-color: var(--accent-dark-hover);
+  color: var(--text-light);
 }
 
 .tool-button.active {
-  background-color: #007bff;
-  color: white;
-  border-color: #007bff;
+  background-color: var(--accent-light);
+  color: var(--text-dark);
+  border-color: var(--accent-light);
 }
-
 .tool-button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
+/* Tool icon styling */
 .tool-icon {
   font-size: 16px;
 }
 
+/* Save button */
 .save-button {
-  background-color: #28a745;
-  color: white;
-  border-color: #28a745;
+  background-color: var(--success-light);
+  color: var(--surface-light);
+  border-color: var(--success-light);
 }
 
-.save-button:hover:not(:disabled) {
-  background-color: #218838;
+body.dark-mode .save-button {
+  background-color: var(--success-dark);
+  color: var(--surface-light);
+  border-color: var(--success-dark);
 }
 
+.submit-button {
+  background-color: var(--accent-light);
+  color: var(--text-dark);
+  border-color: var(--accent-light);
+}
+
+.submit-button:disabled {
+  background-color: var(--secondary-light);
+  color: var(--text-light);
+  border-color: var(--border-light);
+  opacity: 0.7;
+}
+
+
+/* Undo and redo buttons */
 .undo-button, .redo-button {
-  background-color: #6c757d;
-  color: white;
-  border-color: #6c757d;
+  background-color: var(--accent-light); /* Use theme accent */
+  color: var(--text-dark); /* Use theme text color */
+  border-color: var(--accent-light); /* Use theme accent */
+}
+
+body.dark-mode .undo-button, body.dark-mode .redo-button {
+  background-color: var(--accent-dark); /* Use theme accent */
+  color: var(--text-light); /* Use theme text color */
+  border-color: var(--accent-dark); /* Use theme accent */
 }
 
 .undo-button:hover:not(:disabled), .redo-button:hover:not(:disabled) {
-  background-color: #5a6268;
+  background-color: var(--accent-dark); /* Use theme accent */
+  color: var(--text-light); /* Use theme text color */
 }
 
+/* Score button */
+.score-button {
+  background-color: var(--accent-light); /* Use theme accent */
+  color: var(--text-dark); /* Use theme text color */
+  border-color: var(--accent-light); /* Use theme accent */
+}
+
+body.dark-mode .score-button {
+  background-color: var(--accent-dark); /* Use theme accent */
+  color: var(--text-light); /* Use theme text color */
+  border-color: var(--accent-dark); /* Use theme accent */
+}
+
+.score-button:hover:not(:disabled) {
+  background-color: var(--accent-dark); /* Use theme accent */
+  color: var(--text-light); /* Use theme text color */
+}
+
+/* Submit button */
+.submit-button {
+  background-color: var(--accent-light); /* Use theme accent */
+  color: var(--text-dark); /* Use theme text color */
+  border-color: var(--accent-light); /* Use theme accent */
+}
+
+body.dark-mode .submit-button {
+  background-color: var(--accent-dark); /* Use theme accent */
+  color: var(--text-light); /* Use theme text color */
+  border-color: var(--accent-dark); /* Use theme accent */
+}
+
+.submit-button:hover:not(:disabled) {
+  background-color: var(--accent-dark); /* Use theme accent */
+  color: var(--text-light); /* Use theme text color */
+}
+
+.submit-button:disabled {
+  background-color: rgba(224, 201, 127, 0.5); /* Lighter accent for disabled */
+  cursor: not-allowed;
+}
+
+/* Review completed notice */
+.review-completed-notice {
+  color: var(--success-light);
+  background-color: var(--surface-light);
+  border: 1px solid var(--success-light);
+}
+
+body.dark-mode .review-completed-notice {
+  color: var(--success-dark);
+  background-color: var(--surface-dark);
+  border-color: var(--success-dark);
+}
+
+.review-completed-notice::before {
+  content: '✓';
+  font-size: 18px;
+}
+
+/* Color picker */
 .color-picker {
   width: 30px;
   height: 30px;
@@ -89,68 +221,30 @@
 
 .color-label {
   font-size: 14px;
-  color: #6c757d;
+  color: var(--text-light); /* Use theme text color */
 }
 
+body.dark-mode .color-label {
+  color: var(--text-dark); /* Use theme text color */
+}
+
+/* Responsive design */
 @media (max-width: 768px) {
   .annotation-toolbar {
     flex-direction: column;
     gap: 10px;
   }
-  
+
   .toolbar-section {
     width: 100%;
     justify-content: center;
   }
-  
+
   .tool-label {
     display: none;
   }
-  
+
   .tool-button {
     padding: 8px;
   }
-}
-
-.score-button {
-  background-color: #8e44ad;
-  color: white;
-  border-color: #8e44ad;
-}
-
-.score-button:hover:not(:disabled) {
-  background-color: #7d3c98;
-}
-
-/* Add these to your existing AnnotationTools.css */
-
-.submit-button {
-  background-color: #28a745;
-  color: white;
-  border-color: #28a745;
-}
-
-.submit-button:hover:not(:disabled) {
-  background-color: #218838;
-}
-
-.submit-button:disabled {
-  background-color: #90c49b;
-  cursor: not-allowed;
-}
-
-.review-completed-notice {
-  color: #28a745;
-  font-weight: bold;
-  padding: 8px 12px;
-  background-color: #e9f7ef;
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.review-completed-notice::before {
-  content: '✓';
-  font-size: 18px;
 }

@@ -1,6 +1,54 @@
 const Organization = require('../models/Organization');
+const History = require('../models/History');
 const User = require('../models/User');
 
+exports.getOrganizationHistory = async (req, res) => {
+  try {
+    const { organizationId } = req.params;
+    
+    // Find all history entries for this organization
+    const history = await History.find({ organizationId })
+      .populate('userId', 'name email')
+      .populate('documentId', 'filename version')
+      .sort({ timestamp: -1 })
+      .lean();
+
+    // Format the history data
+    const formattedHistory = history.map(entry => ({
+      id: entry._id,
+      documentName: entry.documentId?.filename || 'Deleted Document',
+      version: entry.documentId?.version || entry.details.version,
+      action: entry.actionType,
+      performedBy: entry.userId.name,
+      performerEmail: entry.userId.email,
+      timestamp: entry.timestamp,
+      details: {
+        ...entry.details,
+        reviewers: entry.details.assignedReviewers?.length || 0
+      }
+    }));
+
+    res.status(200).json({ history: formattedHistory });
+  } catch (error) {
+    console.error('Error fetching organization history:', error);
+    res.status(500).json({ message: 'Failed to fetch history', error });
+  }
+};
+
+exports.trackHistory = async (organizationId, documentId, userId, actionType, details) => {
+  try {
+    const historyEntry = new History({
+      organizationId,
+      documentId,
+      userId,
+      actionType,
+      details
+    });
+    await historyEntry.save();
+  } catch (error) {
+    console.error('Error tracking history:', error);
+  }
+};
 // Create a new organization
 exports.createOrganization = async (req, res) => {
   try {

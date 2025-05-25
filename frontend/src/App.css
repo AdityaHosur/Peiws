@@ -1,12 +1,46 @@
 :root {
+  /* Base Colors */
   --primary-light: #f8f3d9; /* Cream */
-  --primary-dark: #000000; /* Black */
+  --primary-dark: #1a1a1a; /* Soft Black - changed from pure black for better contrast */
+  
+  /* Text Colors */
   --text-light: #333333; /* Dark Gray */
   --text-dark: #ffffff; /* White */
-  --accent-light: #e0c97f; /* Gold for light mode accents */
-  --accent-dark: #444444; /* Dark Gray for dark mode accents */
+  
+  /* Accent Colors */
+  --accent-light: #e0c97f; /* Gold */
+  --accent-dark: #4a4a4a; /* Dark Gray */
+  
+  /* New Color Variants */
+  --accent-light-hover: #d4b85f; /* Darker Gold */
+  --accent-dark-hover: #5c5c5c; /* Lighter Gray */
+  
+  /* Secondary Colors */
+  --secondary-light: #c4b7a6; /* Warm Gray */
+  --secondary-dark: #2d2d2d; /* Charcoal */
+  
+  /* Surface Colors */
+  --surface-light: #ffffff; /* White */
+  --surface-dark: #222222; /* Dark Gray */
+  
+  /* Border Colors */
+  --border-light: #e6dcc6; /* Light Gold */
+  --border-dark: #3d3d3d; /* Dark Gray */
+  
+  /* Status Colors */
+  --success-light: #7fb069; /* Sage Green */
+  --success-dark: #2d5a27; /* Dark Green */
+  --error-light: #d64545; /* Soft Red */
+  --error-dark: #8b2525; /* Dark Red */
+  --warning-light: #f4a259; /* Soft Orange */
+  --warning-dark: #8f4f21; /* Dark Orange */
+  
+  /* Shadow Colors */
+  --shadow-light: rgba(0, 0, 0, 0.1);
+  --shadow-dark: rgba(0, 0, 0, 0.3);
 }
 
+/* Update existing styles to use new color variants */
 body.light-mode {
   background-color: var(--primary-light);
   color: var(--text-light);
@@ -15,6 +49,54 @@ body.light-mode {
 body.dark-mode {
   background-color: var(--primary-dark);
   color: var(--text-dark);
+}
+
+/* Add new utility classes for the color variants */
+.surface-container {
+  background-color: var(--surface-light);
+  border: 1px solid var(--border-light);
+  box-shadow: 0 2px 4px var(--shadow-light);
+}
+
+body.dark-mode .surface-container {
+  background-color: var(--surface-dark);
+  border-color: var(--border-dark);
+  box-shadow: 0 2px 4px var(--shadow-dark);
+}
+
+.secondary-container {
+  background-color: var(--secondary-light);
+  color: var(--text-light);
+}
+
+body.dark-mode .secondary-container {
+  background-color: var(--secondary-dark);
+  color: var(--text-dark);
+}
+
+/* Status indicators */
+.status-success {
+  color: var(--success-light);
+}
+
+body.dark-mode .status-success {
+  color: var(--success-dark);
+}
+
+.status-error {
+  color: var(--error-light);
+}
+
+body.dark-mode .status-error {
+  color: var(--error-dark);
+}
+
+.status-warning {
+  color: var(--warning-light);
+}
+
+body.dark-mode .status-warning {
+  color: var(--warning-dark);
 }
 
 h1, p {

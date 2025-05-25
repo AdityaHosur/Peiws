@@ -136,24 +136,20 @@ const Review = () => {
         {selectedReview ? (
           <div>
             <h3 className="content-title">Review: {selectedReview.fileId.filename}</h3>
-            <p className="document-info">
-              <span className="info-label">Deadline:</span>
-              <span className={getDeadlineClass(selectedReview.fileId.deadline)}>
-                {formatDate(selectedReview.fileId.deadline)}
-              </span>
-
-              <span className="info-label" style={{ marginLeft: '15px' }}>
-                Status:
-              </span>
-              <span
-                className={`status-${(
-                  selectedReview.status || 'pending'
-                ).toLowerCase()}`}
-              >
-                {(selectedReview.status || 'Pending').charAt(0).toUpperCase() +
-                  (selectedReview.status || 'pending').slice(1)}
-              </span>
-            </p>
+            <div className="document-info">
+              <div>
+                <span className="info-label">Deadline: </span>
+                <span className={getDeadlineClass(selectedReview.fileId.deadline)}>
+                  {formatDate(selectedReview.fileId.deadline)}
+                </span>
+              </div>
+              <div>
+                <span className={`status-${(selectedReview.status || 'pending').toLowerCase()}`}>
+                  {(selectedReview.status || 'Pending').charAt(0).toUpperCase() +
+                    (selectedReview.status || 'pending').slice(1)}
+                </span>
+              </div>
+            </div>
             <DocViewer
               fileUrl={getFileStreamUrl(selectedReview.fileId.fileId)}
               reviewId={selectedReview._id}

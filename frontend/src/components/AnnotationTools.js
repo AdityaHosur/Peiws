@@ -20,11 +20,11 @@ const AnnotationTools = ({
   isReviewCompleted
 }) => {
   const tools = [
-    { id: 'highlight', label: 'Highlight', icon: '🖍️' },
+    { id: 'sticky', label: 'Sticky Note', icon: '📝' },
     { id: 'underline', label: 'Underline', icon: '＿' },
     { id: 'strikethrough', label: 'Strikethrough', icon: '🚫' },
     { id: 'comment', label: 'Comment', icon: '💬' },
-    { id: 'sticky', label: 'Sticky Note', icon: '📝' }
+    { id: 'highlight', label: 'Highlight', icon: '🖍️' },
   ];
 
   // Determine if scoring has been done for this document
@@ -43,6 +43,18 @@ const AnnotationTools = ({
             <span className="tool-label">{tool.label}</span>
           </button>
         ))}
+        {selectedTool === 'highlight' && !isReviewCompleted && (
+          <div className="toolbar-section">
+            <input
+              type="color"
+              value={highlightColor}
+              onChange={(e) => onColorChange(e.target.value)}
+              className="color-picker"
+              disabled={isReviewCompleted}
+            />
+            <span className="color-label">Color</span>
+          </div>
+        )}
         {isReviewCompleted && <div className="review-completed-notice">Review completed - Read Only</div>}
       </div>
       
@@ -93,19 +105,6 @@ const AnnotationTools = ({
           </>
         )}
       </div>
-      
-      {selectedTool === 'highlight' && !isReviewCompleted && (
-        <div className="toolbar-section">
-          <input
-            type="color"
-            value={highlightColor}
-            onChange={(e) => onColorChange(e.target.value)}
-            className="color-picker"
-            disabled={isReviewCompleted}
-          />
-          <span className="color-label">Color</span>
-        </div>
-      )}
     </div>
   );
 };

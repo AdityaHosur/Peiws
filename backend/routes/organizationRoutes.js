@@ -6,7 +6,8 @@ const {
   listUserOrganizations,
   inviteUsers,
   listUsers,
-  updateRole
+  updateRole,
+  getOrganizationHistory
 } = require('../controllers/organizationController');
 const authMiddleware = require('../middlewares/authMiddleware'); // Middleware to verify user authentication
 
@@ -30,5 +31,6 @@ router.get('/list', authMiddleware, listUserOrganizations);
 router.get('/:organizationId/members', authMiddleware, listUsers);
 
 router.put('/:organizationId/members/:memberId/role', authMiddleware, updateRole);
+router.get('/:organizationId/history', authMiddleware, getOrganizationHistory);
 
 module.exports = router;

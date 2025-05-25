@@ -43,21 +43,34 @@ body.dark-mode .review-card {
   border-radius: 8px;
   margin-bottom: 10px;
   border-left: 4px solid transparent;
-  background-color: rgba(255, 255, 255, 0.08);
+  background-color: var(--primary-light); /* Use theme color */
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   transition: all 0.2s ease;
   cursor: pointer;
 }
 
+body.dark-mode .document-item {
+  background-color: var(--primary-dark); /* Use theme color */
+}
+
 .document-item:hover {
   transform: translateY(-1px);
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
-  background-color: rgba(255, 255, 255, 0.12);
+  background-color: var(--accent-light); /* Use theme accent */
+}
+
+body.dark-mode .document-item:hover {
+  background-color: var(--accent-dark); /* Use theme accent */
 }
 
 .document-item.selected {
-  border-left-color: #2196f3;
-  background-color: rgba(33, 150, 243, 0.1);
+  border-left-color: var(--accent-light); /* Use theme accent */
+  background-color: rgba(224, 201, 127, 0.2); /* Lighter accent for selection */
+}
+
+body.dark-mode .document-item.selected {
+  border-left-color: var(--accent-dark);
+  background-color: rgba(68, 68, 68, 0.2);
 }
 
 /* Document row layout */
@@ -93,12 +106,17 @@ body.dark-mode .document-title {
 }
 
 .tag {
-  color: #2196f3;
-  background-color: rgba(33, 150, 243, 0.12);
+  color: var(--accent-light); /* Use theme accent */
+  background-color: rgba(224, 201, 127, 0.2); /* Lighter accent */
   padding: 3px 8px;
   border-radius: 12px;
   font-size: 0.85rem;
   font-weight: 500;
+}
+
+body.dark-mode .tag {
+  color: var(--accent-dark);
+  background-color: rgba(68, 68, 68, 0.2);
 }
 
 .tag::before {
@@ -107,9 +125,30 @@ body.dark-mode .document-title {
 }
 
 .no-tags {
-  color: #888;
+  color: var(--text-light);
   font-style: italic;
   font-size: 0.85rem;
+}
+
+body.dark-mode .no-tags {
+  color: var(--text-dark);
+}
+
+.document-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+body.dark-mode .document-info {
+  background-color: var(--surface-dark);
+  border-color: var(--border-dark);
+}
+
+.document-info > div {
+  margin: 0;  /* Remove default margin from divs */
 }
 
 /* Document status styling */
@@ -124,34 +163,88 @@ body.dark-mode .document-title {
 }
 
 .status-pending {
-  background-color: rgba(244, 67, 54, 0.15);
-  color: #f44336;
+  background-color: var(--warning-light);
+  color: var(--text-dark);
+  padding: 6px 12px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-.status-inprogress {
-  background-color: rgba(33, 150, 243, 0.15);
-  color: #2196f3;
+.status-in-progress {
+  background-color: var(--accent-light);
+  color: var(--text-dark);
+  padding: 6px 12px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .status-completed {
-  background-color: rgba(76, 175, 80, 0.15);
-  color: #4caf50;
+  background-color: var(--success-light);
+  color: var(--text-dark);
+  padding: 6px 12px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+body.dark-mode .status-pending {
+  background-color: var(--warning-dark);
+  color: var(--text-light);
+}
+
+body.dark-mode .status-inprogress {
+  background-color: var(--accent-dark);
+  color: var(--text-light);
+}
+
+body.dark-mode .status-completed {
+  background-color: var(--success-dark);
+  color: var(--text-light);
 }
 
 /* Document deadline styling */
-.document-deadline {
-  font-size: 0.9rem;
-  color: #666;
+.info-label {
+  font-weight: 600;
+  color: var(--text-light);
+}
+
+body.dark-mode .info-label {
+  color: var(--text-dark);
+}
+
+.deadline-passed {
+  color: var(--error-light);
   font-weight: 500;
 }
 
-.document-deadline::before {
-  content: "Deadline: ";
-  font-weight: 600;
+.deadline-close {
+  color: var(--warning-light);
+  font-weight: 500;
 }
 
-body.dark-mode .document-deadline {
-  color: #bbb;
+.deadline-upcoming {
+  color: var(--success-light);
+  font-weight: 500;
+}
+
+body.dark-mode .deadline-passed {
+  color: var(--error-dark);
+}
+
+body.dark-mode .deadline-close {
+  color: var(--warning-dark);
+}
+
+body.dark-mode .deadline-upcoming {
+  color: var(--success-dark);
 }
 
 /* Responsive design */

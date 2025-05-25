@@ -4,6 +4,14 @@ import './OverallScore.css';
 const OverallScore = ({ reviews, documentTitle }) => {
   const [expandedCategory, setExpandedCategory] = useState(null);
 
+  const scoreCategories = [
+    { key: 'structure', label: 'Structure', icon: '📝' },
+    { key: 'grammar', label: 'Grammar', icon: '🔤' },
+    { key: 'clarity', label: 'Clarity', icon: '💡' },
+    { key: 'content', label: 'Content', icon: '📚' },
+    { key: 'overall', label: 'Overall', icon: '⭐' }
+  ];
+
   if (!reviews || reviews.length === 0) {
     return (
       <div className="no-reviews-message">
@@ -14,95 +22,125 @@ const OverallScore = ({ reviews, documentTitle }) => {
     );
   }
 
-  // Handle card click to expand/collapse detail view
+  // Handle card click to show detailed view
   const toggleCategoryExpand = (category) => {
-    if (expandedCategory === category) {
-      setExpandedCategory(null);
-    } else {
-      setExpandedCategory(category);
-    }
-  };
-
-  // Close popup when clicking outside
-  const handleOverlayClick = (e) => {
-    if (e.target.classList.contains('score-detail-overlay')) {
-      setExpandedCategory(null);
-    }
+    setExpandedCategory(expandedCategory === category ? null : category);
   };
 
   return (
     <div className="overall-score-section">
-      <h3 className="content-title">
-        Overall Evaluation for {documentTitle}
-      </h3>
+      <h3 className="content-title">Overall Evaluation for {documentTitle}</h3>
       
-      <div className="combined-scores">
-        {/* Score cards in visual grid layout */}
-        <div className="score-visual-grid">
-          {['structure', 'grammar', 'clarity', 'content', 'overall'].map(category => {
-            // Calculate average score for this category
-            const scores = reviews.map(review => 
-              Number(review.scores?.[category] || 0)
-            ).filter(score => score > 0);
+      <div className="evaluation-summary">
+        <h4>Combined Scores from All Reviewers</h4>
+        <div className="scores-container">
+          <h5>Scores</h5>
+          <div className="score-visual-grid">
+            {scoreCategories.map(({ key, label, icon }) => {
+              const scores = reviews
+                .map(review => Number(review.scores?.[key] || 0))
+                .filter(score => score > 0);
               
-            const average = scores.length 
-              ? (scores.reduce((sum, score) => sum + score, 0) / scores.length).toFixed(1) 
-              : 0;
+              const average = scores.length 
+                ? (scores.reduce((sum, score) => sum + score, 0) / scores.length).toFixed(1) 
+                : 0;
+
+              const color = average <= 2 ? 'var(--error-light)' : 
+                          average <= 3 ? 'var(--warning-light)' : 
+                          average <= 4 ? 'var(--success-light)' : 
+                          'var(--accent-light)';
               
-            // Determine color based on average score
-            const color = average <= 2 ? '#ff5252' : average <= 3 ? '#ffca28' : average <= 4 ? '#66bb6a' : '#42a5f5';
-              
-            // Get icon for category
-            const icon = category === 'structure' ? '📝' : 
-              category === 'grammar' ? '🔤' : 
-              category === 'clarity' ? '💡' : 
-              category === 'content' ? '📚' : '⭐';
-                
-            return (
-              <div key={category} 
-                className="score-card" 
-                onClick={() => toggleCategoryExpand(category)}
-              >
-                <div className="score-card-header">
-                  <span className="score-icon">{icon}</span>
-                  <span className="score-label">{category.charAt(0).toUpperCase() + category.slice(1)}</span>
-                </div>
-                <div className="score-value-display">{average}/5</div>
-                <div className="score-bar-container">
-                  <div 
-                    className="score-bar" 
-                    style={{
-                      width: `${(average / 5) * 100}%`,
-                      backgroundColor: color
-                    }}
-                  ></div>
-                </div>
-                <div className="score-card-footer">
+              return (
+                <div 
+                  key={key} 
+                  className="score-card"
+                  onClick={() => toggleCategoryExpand(key)}
+                >
+                  <div className="score-card-header">
+                    <span className="score-icon">{icon}</span>
+                    <span className="score-label">{label}</span>
+                  </div>
+                  <div className="score-value-display">{average}/5</div>
+                  <div className="score-bar-container">
+                    <div 
+                      className="score-bar"
+                      data-score={Math.round(average)}
+                      style={{
+                        width: `${(average / 5) * 100}%`,
+                        backgroundColor: color
+                      }}
+                    />
+                  </div>
                   <div className="click-hint">Click for details</div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
 
-        {/* Score details popup */}
-        {expandedCategory && (
-          <div className="score-detail-overlay" onClick={handleOverlayClick}>
-            <div className="score-detail-popup">
-              <button className="close-popup" onClick={() => setExpandedCategory(null)}>×</button>
-              <h3>{expandedCategory.charAt(0).toUpperCase() + expandedCategory.slice(1)} Score Breakdown</h3>
-              
+        {/* Detailed breakdowns */}
+        <div className="review-text-container">
+          <div className="review-summary">
+            <h5><span className="review-icon">📋</span> Summary Feedback</h5>
+            <div className="review-content-box">
+              {reviews.some(review => review.scores?.summary) ? (
+                reviews
+                  .filter(review => review.scores?.summary)
+                  .map((review, index) => (
+                    <div key={index} className="feedback-item">
+                      <div className="reviewer-label">Reviewer {index + 1}</div>
+                      <p>{review.scores.summary}</p>
+                    </div>
+                  ))
+              ) : (
+                <p className="no-feedback">No summary feedback provided yet.</p>
+              )}
+            </div>
+          </div>
+
+          <div className="review-feedback">
+            <h5><span className="review-icon">💬</span> Detailed Feedback</h5>
+            <div className="review-content-box">
+              {reviews.some(review => review.scores?.feedback) ? (
+                reviews
+                  .filter(review => review.scores?.feedback)
+                  .map((review, index) => (
+                    <div key={index} className="feedback-item">
+                      <div className="reviewer-label">Reviewer {index + 1}</div>
+                      <p>{review.scores.feedback}</p>
+                    </div>
+                  ))
+              ) : (
+                <p className="no-feedback">No detailed feedback provided yet.</p>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Score Distribution Popup */}
+      {expandedCategory && (
+        <div className="score-detail-overlay" onClick={(e) => {
+          if (e.target.classList.contains('score-detail-overlay')) {
+            setExpandedCategory(null);
+          }
+        }}>
+          <div className="score-detail-popup">
+            <button className="close-popup" onClick={() => setExpandedCategory(null)}>×</button>
+            <h3>{expandedCategory.charAt(0).toUpperCase() + expandedCategory.slice(1)} Score Distribution</h3>
+            
+            <div className="score-detail-content">
               {(() => {
-                const scores = reviews.map(review => 
-                  Number(review.scores?.[expandedCategory] || 0)
-                ).filter(score => score > 0);
+                const scores = reviews
+                  .map(review => Number(review.scores?.[expandedCategory] || 0))
+                  .filter(score => score > 0);
                 
                 const average = scores.length 
                   ? (scores.reduce((sum, score) => sum + score, 0) / scores.length).toFixed(1) 
                   : 0;
 
                 return (
-                  <div className="score-detail-content">
+                  <>
                     <div className="average-score-display">
                       <div className="big-score">{average}</div>
                       <div className="out-of">out of 5</div>
@@ -112,8 +150,7 @@ const OverallScore = ({ reviews, documentTitle }) => {
                     </div>
                     
                     <div className="score-distribution-detail">
-                      <h4>Score Distribution</h4>
-                      
+                      <h4>Distribution</h4>
                       {[5, 4, 3, 2, 1].map(value => {
                         const count = scores.filter(score => Math.round(score) === value).length;
                         const percentage = scores.length ? Math.round((count / scores.length) * 100) : 0;
@@ -123,15 +160,15 @@ const OverallScore = ({ reviews, documentTitle }) => {
                             <div className="distribution-label">{value} star{value !== 1 ? 's' : ''}</div>
                             <div className="distribution-detail-bar-container">
                               <div 
-                                className="distribution-detail-bar" 
+                                className="distribution-detail-bar"
                                 style={{ 
                                   width: `${percentage}%`,
-                                  backgroundColor: 
-                                    value <= 2 ? '#ff5252' : 
-                                    value <= 3 ? '#ffca28' : 
-                                    value <= 4 ? '#66bb6a' : '#42a5f5'
+                                  backgroundColor: value <= 2 ? 'var(--error-light)' : 
+                                                value === 3 ? 'var(--warning-light)' : 
+                                                value === 4 ? 'var(--success-light)' : 
+                                                'var(--accent-light)'
                                 }}
-                              ></div>
+                              />
                               <span className="distribution-percentage">{percentage}%</span>
                               <span className="distribution-count">({count})</span>
                             </div>
@@ -139,57 +176,13 @@ const OverallScore = ({ reviews, documentTitle }) => {
                         );
                       })}
                     </div>
-                  </div>
+                  </>
                 );
               })()}
             </div>
           </div>
-        )}
-        
-        {/* Overall Summaries Section */}
-        <div className="overall-feedback">
-          <h4>Overall Summaries</h4>
-          <div className="feedback-summary">
-            {reviews.some(review => review.scores?.summary) ? (
-              <ul className="feedback-points">
-                {reviews
-                  .filter(review => review.scores?.summary)
-                  .map((review, index) => (
-                    <li key={index} className="feedback-point">
-                      <div className="reviewer-label">Reviewer {index + 1}</div>
-                      <p>{review.scores.summary}</p>
-                    </li>
-                  ))
-                }
-              </ul>
-            ) : (
-              <p className="no-feedback">No summary feedback provided yet.</p>
-            )}
-          </div>
         </div>
-        
-        {/* Detailed Feedback Section */}
-        <div className="overall-feedback">
-          <h4>Detailed Feedback</h4>
-          <div className="feedback-summary">
-            {reviews.some(review => review.scores?.feedback) ? (
-              <ul className="feedback-points">
-                {reviews
-                  .filter(review => review.scores?.feedback)
-                  .map((review, index) => (
-                    <li key={index} className="feedback-point">
-                      <div className="reviewer-label">Reviewer {index + 1}</div>
-                      <p>{review.scores.feedback}</p>
-                    </li>
-                  ))
-                }
-              </ul>
-            ) : (
-              <p className="no-feedback">No detailed feedback provided yet.</p>
-            )}
-          </div>
-        </div>
-      </div>
+      )}
     </div>
   );
 };

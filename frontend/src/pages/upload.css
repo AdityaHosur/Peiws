@@ -11,7 +11,7 @@
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   padding: 2rem;
-  margin:1 rem;
+  margin: 1rem;
   flex: 1 1 400px;
   max-width: 500px;
   transition: background-color 0.3s, color 0.3s;
@@ -30,7 +30,7 @@ body.dark-mode .upload-card {
 
 /* Dashed Box for Upload */
 .upload-drag-box {
-  border: 3px dashed var(--accent-light);
+  border: 3px dashed var(--accent-light); /* Use theme accent for dashes */
   border-radius: 8px;
   padding: 4rem;
   text-align: center;
@@ -77,15 +77,16 @@ label {
   margin-bottom: 0.5rem;
 }
 
-input[type="text"], select {
+input[type="text"], select, input[type="date"] {
   padding: 0.8rem;
   border: 1px solid var(--accent-light);
   border-radius: 4px;
   font-size: 1rem;
   transition: border-color 0.3s;
+  width: 100%; /* Ensure uniform width */
 }
 
-input[type="text"]:focus, select:focus {
+input[type="text"]:focus, select:focus, input[type="date"]:focus {
   outline: none;
   border-color: var(--accent-dark);
 }
@@ -109,6 +110,16 @@ input[type="text"]:focus, select:focus {
   color: var(--text-light);
 }
 
+body.dark-mode .upload-button {
+  background-color: var(--accent-dark);
+  color: var(--text-light);
+}
+
+body.dark-mode .upload-button:hover {
+  background-color: var(--accent-light);
+  color: var(--text-dark);
+}
+
 .file-preview {
   display: flex;
   flex-direction: column;
@@ -120,17 +131,25 @@ input[type="text"]:focus, select:focus {
 .file-name {
   margin-top: 0.5rem;
   font-size: 0.9rem;
-  color: #555;
+  color: var(--text-light);
   text-align: center;
   word-break: break-word; /* Handle long filenames */
+}
+
+body.dark-mode .file-name {
+  color: var(--text-dark);
 }
 
 .thumbnail {
   max-width: 100%;
   max-height: 100px;
   object-fit: contain;
-  border: 1px solid #ccc;
+  border: 1px solid var(--accent-light);
   border-radius: 4px;
+}
+
+body.dark-mode .thumbnail {
+  border-color: var(--accent-dark);
 }
 
 .reviewer-input {
@@ -144,57 +163,15 @@ input[type="text"]:focus, select:focus {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 5px;
-  padding: 5px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-.add-reviewer-button,
-.remove-reviewer-button {
-  background-color: #007bff;
-  color: white;
-  border: none;
-  padding: 5px 10px;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.add-reviewer-button:hover,
-.remove-reviewer-button:hover {
-  background-color: #0056b3;
-}
-
-body.dark-mode .upload-button {
-  background-color: var(--accent-dark);
-  color: var(--text-light);
-}
-
-body.dark-mode .upload-button:hover {
-  background-color: var(--accent-light);
-  color: var(--text-dark);
-}
-
-
-.error-message {
-  color: #e74c3c;
-  font-size: 0.9rem;
-  margin-top: 0.3rem;
-}
-
-.reviewer-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 5px;
   padding: 8px 10px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--accent-light);
   border-radius: 4px;
   background-color: rgba(0, 0, 0, 0.03);
 }
 
 body.dark-mode .reviewer-item {
   background-color: rgba(255, 255, 255, 0.05);
-  border-color: #444;
+  border-color: var(--accent-dark);
 }
 
 .reviewer-list {
@@ -203,14 +180,37 @@ body.dark-mode .reviewer-item {
   margin-top: 10px;
 }
 
-input[type="date"] {
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  background-color: #fff;
+.add-reviewer-button,
+.remove-reviewer-button {
+  background-color: var(--accent-light); /* Use theme accent for buttons */
+  color: var(--text-dark);
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s, color 0.3s;
 }
 
-body.dark-mode input[type="date"] {
-  background-color: var(--primary-dark);
+.add-reviewer-button:hover,
+.remove-reviewer-button:hover {
+  background-color: var(--accent-dark);
+  color: var(--text-light);
+}
+
+body.dark-mode .add-reviewer-button,
+body.dark-mode .remove-reviewer-button {
+  background-color: var(--accent-dark);
+  color: var(--text-light);
+}
+
+body.dark-mode .add-reviewer-button:hover,
+body.dark-mode .remove-reviewer-button:hover {
+  background-color: var(--accent-light);
   color: var(--text-dark);
+}
+
+.error-message {
+  color: #e74c3c;
+  font-size: 0.9rem;
+  margin-top: 0.3rem;
 }

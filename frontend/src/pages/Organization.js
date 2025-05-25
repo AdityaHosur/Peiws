@@ -7,6 +7,7 @@ import {
   updateMemberRole,
   getFilesByOrganization,
   assignReviewersToFile,
+  getOrganizationHistory
 } from '../services/api'; // Import API functions
 import { useToast } from '../components/ToastContext'; // Import toast hook
 import './organization.css';
@@ -30,6 +31,8 @@ const Organization = () => {
   const [error, setError] = useState('');
   const token = localStorage.getItem('token'); // Retrieve token from localStorage
   const { showToast } = useToast(); // Use the toast hook
+  const [history, setHistory] = useState([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
 
   // Fetch organizations on component mount
   useEffect(() => {
@@ -73,6 +76,23 @@ const Organization = () => {
     };
     fetchFiles();
   }
+    if (managementTab === 'history' && selectedOrg) {
+    const fetchHistory = async () => {
+      try {
+        setLoadingHistory(true);
+        const response = await getOrganizationHistory(token, selectedOrg.name);
+        // Make sure we're accessing the correct property from the response
+        setHistory(response.history || []); // Ensure it's always an array
+      } catch (err) {
+        setError(err.message || 'Failed to fetch history');
+        showToast(err.message || 'Failed to fetch history', 'error');
+        setHistory([]); // Set empty array on error
+      } finally {
+        setLoadingHistory(false);
+      }
+    };
+    fetchHistory();
+  }
   }, [managementTab, selectedOrg, token]);
 
   // Filter organizations by role
@@ -94,8 +114,6 @@ const Organization = () => {
     // Set default tab based on role
     if (org.role === 'Admin') {
       setManagementTab('invitations');
-    } else if (org.role === 'Reviewer') {
-      setManagementTab('uploads');
     } else {
       setManagementTab('history');
     }
@@ -261,9 +279,11 @@ const handleAssignReviewers = async (fileId) => {
             </div>
 
             {/* Admin Management Tabs */}
-            {selectedOrg.role === 'Admin' && (
+            {selectedOrg && (
               <>
                 <div className="management-tabs">
+                  {selectedOrg.role === 'Admin' ? (
+                    <>
                   <button
                     className={`tab-button ${managementTab === 'invitations' ? 'active' : ''}`}
                     onClick={() => setManagementTab('invitations')}
@@ -288,6 +308,23 @@ const handleAssignReviewers = async (fileId) => {
                   >
                     History
                   </button>
+                  </>
+                  ):(
+                  <>
+                  <button
+                    className={`tab-button ${managementTab === 'members' ? 'active' : ''}`}
+                    onClick={() => setManagementTab('members')}
+                  >
+                    Members
+                  </button>
+                  <button
+                    className={`tab-button ${managementTab === 'history' ? 'active' : ''}`}
+                    onClick={() => setManagementTab('history')}
+                  >
+                    History
+                  </button>
+                </>
+                )}
                 </div>
 
                 <div className="tab-content">
@@ -346,33 +383,87 @@ const handleAssignReviewers = async (fileId) => {
                       </form>
                     </div>
                   )}
-                  {managementTab === 'members' && (
-                    <div className="members-tab">
-                      <h4 className="section-title">Organization Members</h4>
-                      {loadingMembers ? (
-                        <p>Loading members...</p>
-                      ) : (
-                        <ul className="members-list">
-                          {members.map((member) => (
-                            <li key={member.id} className="member-item">
-                              <span>{member.name} ({member.email})</span>
-                              <span className="member-role">
-                                Role: 
-                                <select
-                                  value={member.role}
-                                  onChange={(e) => handleRoleUpdate(member.id, e.target.value)}
-                                  disabled={member.id === selectedOrg.admin} // Disable role change for the current admin
-                                >
-                                  <option value="Admin">Admin</option>
-                                  <option value="Member">Member</option>
-                                </select>
-                              </span>
-                            </li>
-                          ))}
-                        </ul>
-                      )}
+                  <div className="tab-content">
+                    {managementTab === 'members' && (
+                      <div className="members-tab">
+                        <h4 className="section-title">Organization Members</h4>
+                        {loadingMembers ? (
+                          <p>Loading members...</p>
+                        ) : (
+                          <ul className="members-list">
+                            {members.map((member) => (
+                              <li key={member.id} className="member-item">
+                                <span>{member.name} ({member.email})</span>
+                                {selectedOrg.role === 'Admin' ? (
+                                  // Show role selector only for admins
+                                  <span className="member-role">
+                                    Role: 
+                                    <select
+                                      value={member.role}
+                                      onChange={(e) => handleRoleUpdate(member.id, e.target.value)}
+                                      disabled={member.id === selectedOrg.admin}
+                                    >
+                                      <option value="Admin">Admin</option>
+                                      <option value="Member">Member</option>
+                                    </select>
+                                  </span>
+                                ) : (
+                                  // Show read-only role for members
+                                  <span className="member-role">
+                                    Role: {member.role}
+                                  </span>
+                                )}
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                    )}
                     </div>
-                  )}
+                  {managementTab === 'history' && (
+                      <div className="history-tab">
+                        <h4 className="section-title">Activity History</h4>
+                        {loadingHistory ? (
+                          <p>Loading history...</p>
+                        ) : Array.isArray(history) && history.length > 0 ? (
+                          <div className="history-list">
+                            {history.map((item) => (
+                      <div key={item._id || item.id} className="history-item">
+                        <div className="history-left">
+                          <span className="history-title">{item.documentName || item.filename}</span>
+                          <span className="history-date">
+                            {new Date(item.timestamp).toLocaleDateString(undefined, {
+                              year: 'numeric',
+                              month: 'short',
+                              day: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </span>
+                        </div>
+                        <div className="history-details">
+                          <span className={`history-action action-${item.action || item.type}`}>
+                            {item.action || (item.type === 'upload' ? 'New Upload' : 'Review Completed')}
+                          </span>
+                          {(item.version || item.details?.version) && (
+                            <span className="history-version">
+                              Version: {item.version || item.details.version}
+                            </span>
+                          )}
+                          <span className="history-user">
+                            {item.performedBy || (item.type === 'upload' 
+                              ? `Uploaded by ${item.userName}`
+                              : `Reviewed by ${item.reviewerName}`)}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                          </div>
+                        ) : (
+                          <p className="no-history">No activity history available</p>
+                        )}
+                      </div>
+                    )}
                   {managementTab === 'assign' && (
                     <div className="assign-tab">
                       <h4 className="section-title">Assign Reviewers</h4>

@@ -1,55 +1,84 @@
-/* Overall Score section styles */
 .overall-score-section {
-  padding: 10px 0;
+  padding: 20px 0;
 }
 
-.combined-scores {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
-.score-summary-card {
-  background-color: white;
+.evaluation-summary {
+  margin-bottom: 24px;
+  background-color: var(--surface-light);
   border-radius: 10px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  box-shadow: 0 4px 16px var(--shadow-light);
   overflow: hidden;
-  border: 1px solid #eaeaea;
+  border: 1px solid var(--border-light);
 }
 
-body.dark-mode .score-summary-card {
-  background-color: #2a2a2a;
-  border-color: #444;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+body.dark-mode .evaluation-summary {
+  background-color: var(--surface-dark);
+  border-color: var(--border-dark);
+  box-shadow: 0 4px 16px var(--shadow-dark);
 }
 
-.score-summary-header {
-  background-color: #f6f8fa;
-  padding: 16px 20px;
-  border-bottom: 1px solid #eaeaea;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-body.dark-mode .score-summary-header {
-  background-color: #222;
-  border-color: #444;
-}
-
-.score-summary-header h4 {
+.evaluation-summary h4 {
   margin: 0;
-  font-size: 1.1rem;
-  color: #333;
+  padding: 16px 20px;
+  font-size: 1.2rem;
+  color: var(--text-light);
+  background-color: var(--primary-light);
+  border-bottom: 1px solid var(--border-light);
 }
 
-body.dark-mode .score-summary-header h4 {
-  color: #eee;
+body.dark-mode .evaluation-summary h4 {
+  background-color: var(--primary-dark);
+  color: var(--text-dark);
+  border-color: var(--border-dark);
+}
+
+.scores-container {
+  padding: 16px 20px;
+}
+
+.scores-container h5 {
+  margin-top: 0;
+  color: var(--text-light);
+  font-size: 1.1rem;
+}
+
+body.dark-mode .scores-container h5 {
+  color: var(--text-dark);
+}
+
+.score-visual-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px;
+  margin: 16px 0;
+}
+
+.score-card {
+  background-color: var(--surface-light);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px var(--shadow-light);
+  padding: 16px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+body.dark-mode .score-card {
+  background-color: var(--surface-dark);
+  box-shadow: 0 2px 8px var(--shadow-dark);
+}
+
+.score-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px var(--shadow-light);
+}
+
+body.dark-mode .score-card:hover {
+  box-shadow: 0 4px 12px var(--shadow-dark);
 }
 
 .reviewer-count-badge {
-  background-color: #007bff;
-  color: white;
+  background-color: var(--accent-light);
+  color: var(--text-dark);
   border-radius: 50%;
   width: 28px;
   height: 28px;
@@ -57,6 +86,11 @@ body.dark-mode .score-summary-header h4 {
   align-items: center;
   justify-content: center;
   font-weight: bold;
+}
+
+body.dark-mode .reviewer-count-badge {
+  background-color: var(--accent-dark);
+  color: var(--text-light);
 }
 
 .score-categories {
@@ -67,17 +101,17 @@ body.dark-mode .score-summary-header h4 {
 }
 
 .combined-score-item {
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--border-light);
   padding-bottom: 20px;
+}
+
+body.dark-mode .combined-score-item {
+  border-color: var(--border-dark);
 }
 
 .combined-score-item:last-child {
   border-bottom: none;
   padding-bottom: 0;
-}
-
-body.dark-mode .combined-score-item {
-  border-color: #444;
 }
 
 .combined-score-header {
@@ -132,14 +166,14 @@ body.dark-mode .score-label {
 .distribution-bar-container {
   flex-grow: 1;
   height: 8px;
-  background-color: #eee;
+  background-color: var(--primary-light);
   border-radius: 4px;
   position: relative;
   overflow: hidden;
 }
 
 body.dark-mode .distribution-bar-container {
-  background-color: #444;
+  background-color: var(--primary-dark);
 }
 
 .distribution-bar {
@@ -158,18 +192,32 @@ body.dark-mode .distribution-count {
   color: #aaa;
 }
 
+.feedback-item {
+  background-color: var(--surface-light);
+  border-radius: 8px;
+  padding: 24px 16px 16px;
+  position: relative;
+  margin-top: 12px;
+  border: 1px solid var(--border-light);
+}
+
+body.dark-mode .feedback-item {
+  background-color: var(--surface-dark);
+  border-color: var(--border-dark);
+}
+
 .overall-feedback {
-  background-color: white;
+  background-color: var(--surface-light);
   border-radius: 10px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  box-shadow: 0 4px 16px var(--shadow-light);
   overflow: hidden;
-  border: 1px solid #eaeaea;
+  border: 1px solid var(--border-light);
 }
 
 body.dark-mode .overall-feedback {
-  background-color: #2a2a2a;
-  border-color: #444;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  background-color: var(--surface-dark);
+  border-color: var(--border-dark);
+  box-shadow: 0 4px 16px var(--shadow-dark);
 }
 
 .overall-feedback h4 {
@@ -214,13 +262,32 @@ body.dark-mode .feedback-point {
 .reviewer-label {
   position: absolute;
   top: -10px;
-  left: 10px;
-  background-color: #007bff;
-  color: white;
+  left: 16px;
+  background-color: var(--accent-light);
+  color: var(--text-dark);
   font-size: 0.75rem;
-  padding: 2px 8px;
+  padding: 2px 12px;
   border-radius: 12px;
   font-weight: 500;
+  z-index: 1;
+  box-shadow: 0 2px 4px var(--shadow-light);
+}
+body.dark-mode .reviewer-label {
+  background-color: var(--accent-dark);
+  color: var(--text-light);
+  box-shadow: 0 2px 4px var(--shadow-dark);
+}
+.review-content-box {
+  padding: 8px;
+}
+
+.review-content-box p {
+  margin: 0;
+  color: var(--text-light);
+}
+
+body.dark-mode .review-content-box p {
+  color: var(--text-dark);
 }
 
 .no-reviews-message {
@@ -229,15 +296,15 @@ body.dark-mode .feedback-point {
   align-items: center;
   justify-content: center;
   padding: 40px 0;
-  background-color: #f9f9f9;
+  background-color: var(--surface-light);
   border-radius: 8px;
-  border: 1px dashed #ddd;
+  border: 1px dashed var(--border-light);
   text-align: center;
 }
 
 body.dark-mode .no-reviews-message {
-  background-color: #2a2a2a;
-  border-color: #444;
+  background-color: var(--surface-dark);
+  border-color: var(--border-dark);
 }
 
 .empty-state-icon {
@@ -247,19 +314,23 @@ body.dark-mode .no-reviews-message {
 
 .sub-message {
   margin-top: 0;
-  color: #666;
+  color: var(--text-light);
   font-size: 0.9rem;
 }
 
 body.dark-mode .sub-message {
-  color: #aaa;
+  color: var(--text-dark);
 }
 
 .no-feedback {
-  color: #666;
+  color: var(--text-light);
   font-style: italic;
   text-align: center;
   padding: 20px 0;
+}
+
+body.dark-mode .no-feedback {
+  color: var(--text-dark);
 }
 
 body.dark-mode .no-feedback {
@@ -289,9 +360,7 @@ body.dark-mode .no-feedback {
   }
 }
 
-/* Add to your existing styles */
 
-/* Interactive Score Cards */
 .score-visual-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
@@ -450,7 +519,7 @@ body.dark-mode .score-detail-popup {
   font-size: 24px;
   line-height: 1;
   cursor: pointer;
-  color: #666;
+  color: var(--text-light);
   padding: 0;
   width: 30px;
   height: 30px;
@@ -462,17 +531,17 @@ body.dark-mode .score-detail-popup {
 }
 
 .close-popup:hover {
-  background-color: #f1f1f1;
-  color: #333;
+  background-color: var(--primary-light);
+  color: var(--text-light);
 }
 
 body.dark-mode .close-popup {
-  color: #aaa;
+  color: var(--text-dark);
 }
 
 body.dark-mode .close-popup:hover {
-  background-color: #444;
-  color: #eee;
+  background-color: var(--primary-dark);
+  color: var(--text-dark);
 }
 
 .score-detail-popup h3 {
@@ -587,19 +656,19 @@ body.dark-mode .distribution-detail-bar-container {
 .distribution-percentage {
   position: absolute;
   left: 8px;
-  color: white;
+  color: var(--text-dark);
   font-size: 0.85rem;
   font-weight: 500;
-  text-shadow: 0 0 2px rgba(0,0,0,0.5);
+  text-shadow: 0 0 2px var(--shadow-dark);
 }
 
 .distribution-count {
   position: absolute;
   right: 8px;
-  color: #333;
+  color: var(--text-light);
   font-size: 0.85rem;
 }
 
 body.dark-mode .distribution-count {
-  color: #eee;
+  color: var(--text-dark);
 }

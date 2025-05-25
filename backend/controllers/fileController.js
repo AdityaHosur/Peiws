@@ -3,6 +3,7 @@ const {generatePdfDiff} = require('../utils/pdfdiff');
 const User = require('../models/User');
 const Upload = require('../models/Upload');
 const Review = require('../models/Review');
+const {trackHistory} = require('../controllers/organizationController'); 
 const mongoose = require('mongoose');
 
 // Upload a file
@@ -34,7 +35,7 @@ exports.uploadFile = async (req, res) => {
         let tags = [];
         if (req.body.tags) {
           try {
-            tags = JSON.parse(req.body.tags);
+            tags = req.body.tags.split(',').map(tag => tag.trim()).filter(tag => tag);
             console.log('Parsed tags:', tags);
           } catch (error) {
             console.error('Error parsing tags:', error);
@@ -113,6 +114,22 @@ exports.uploadFile = async (req, res) => {
         } else {
           console.log('No reviewers provided');
         }
+        try{
+        if(req.body.organizationName){
+          await trackHistory(
+            req.body.organizationName,
+            uploadDetails._id,
+            req.user.id,
+            'upload',
+            {
+              filename: req.file.originalname,
+              version: newVersion
+            }
+          );
+        }
+      } catch (error) {
+        console.error('Error tracking upload history:', error);
+      }
         res.status(201).json({
           message: 'File uploaded successfully',
           fileId: uploadStream.id,
@@ -283,7 +300,17 @@ exports.assignReviewers = async (req, res) => {
       console.error('Error inserting reviews:', error);
       return res.status(500).json({ message: 'Failed to create review records', error });
     }
-
+    await trackHistory(
+      file.organizationName,
+      file._id,
+      req.user.id,
+      'assign_reviewer',
+      {
+        filename: file.filename,
+        version: file.version,
+        assignedReviewers: reviewers
+      }
+    );
     res.status(200).json({ message: 'Reviewers assigned successfully and review records created', file });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error });

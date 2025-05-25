@@ -190,6 +190,19 @@ export const getFilesByOrganization = async (token, organizationName) => {
   }
 };
 
+// Get organization history
+export const getOrganizationHistory = async (token, organizationId) => {
+  try {
+    const response = await axios.get(
+      `${API_BASE_URL}/organization/${organizationId}/history`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: 'An error occurred' };
+  }
+};
+
 // Assign reviewers to a file
 export const assignReviewersToFile = async (token, fileId, reviewers) => {
   try {

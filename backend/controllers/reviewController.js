@@ -161,7 +161,6 @@ exports.saveReviewDetails = async (req, res) => {
       ))) {
       review.status = 'in-progress';
     }
-
     await review.save();
 
     res.status(200).json({ 

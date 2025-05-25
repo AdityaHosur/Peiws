@@ -102,6 +102,8 @@ body.dark-mode .close-button:hover {
 
 .cancel-button {
   background-color: #f1f1f1;
+  margin-top: 15px;
+  height: 40px;
   color: #333;
   border: none;
   padding: 10px 16px;
@@ -125,7 +127,7 @@ body.dark-mode .cancel-button:hover {
 }
 
 .upload-button {
-  background-color: #007bff;
+  background-color: var(--accent-light);
   color: white;
   border: none;
   padding: 10px 16px;
@@ -136,7 +138,7 @@ body.dark-mode .cancel-button:hover {
 }
 
 .upload-button:hover {
-  background-color: #0069d9;
+  background-color: var(--accent-light-hover);
 }
 
 .upload-button:disabled {
@@ -150,7 +152,7 @@ body.dark-mode .upload-button:disabled {
 
 /* Upload Drag Box Styles */
 .upload-drag-box {
-  border: 2px dashed #007bff;
+  border: 2px dashed var(--accent-light);
   border-radius: 8px;
   padding: 30px;
   text-align: center;

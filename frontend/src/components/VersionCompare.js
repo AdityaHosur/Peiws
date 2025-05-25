@@ -259,14 +259,6 @@ useEffect(() => {
               Show {activeFullScreen === 'left' ? 'Right' : 'Left'} Version
             </button>
           )}
-          {viewMode === 'diff-view' && (
-            <button 
-              className={`highlight-toggle ${showDiffHighlights ? 'active' : ''}`}
-              onClick={() => setShowDiffHighlights(!showDiffHighlights)}
-            >
-              {showDiffHighlights ? 'Hide Labels' : 'Show Labels'}
-            </button>
-          )}
         </div>
       </div>
       
@@ -280,7 +272,7 @@ useEffect(() => {
             <option value="">Select version</option>
             {versions.map(version => (
               <option key={`left-${version._id}`} value={version._id}>
-                Version {version.version} ({new Date(version.createdAt).toLocaleDateString()})
+                Version {version.version} ({new Date(version.uploadedAt).toLocaleDateString()})
               </option>
             ))}
           </select>
@@ -295,7 +287,7 @@ useEffect(() => {
             <option value="">Select version</option>
             {versions.map(version => (
               <option key={`right-${version._id}`} value={version._id}>
-                Version {version.version} ({new Date(version.createdAt).toLocaleDateString()})
+                Version {version.version} ({new Date(version.uploadedAt).toLocaleDateString()})
               </option>
             ))}
           </select>
@@ -309,12 +301,12 @@ useEffect(() => {
                 <div className="version-summary">
                   <div className="version-badge older">
                     <span className="version-number">V{selectedVersions.left.version}</span>
-                    <span className="version-date">{new Date(selectedVersions.left.createdAt).toLocaleDateString()}</span>
+                    <span className="version-date">{new Date(selectedVersions.left.uploadedAt).toLocaleDateString()}</span>
                   </div>
                   <div className="version-comparison-arrow">→</div>
                   <div className="version-badge newer">
                     <span className="version-number">V{selectedVersions.right.version}</span>
-                    <span className="version-date">{new Date(selectedVersions.right.createdAt).toLocaleDateString()}</span>
+                    <span className="version-date">{new Date(selectedVersions.right.uploadedAtedAt).toLocaleDateString()}</span>
                   </div>
                 </div>
                 <div className="diff-legend">
@@ -392,7 +384,7 @@ useEffect(() => {
                 <div className="version-info">
                   <h4>Version {selectedVersions.left.version}</h4>
                   <div className="version-metadata">
-                    <p>Uploaded: {new Date(selectedVersions.left.createdAt).toLocaleDateString()}</p>
+                    <p>Uploaded: {new Date(selectedVersions.left.uploadedAt).toLocaleDateString()}</p>
                     {selectedVersions.left.tags?.length > 0 && (
                       <div className="version-tags">
                         <span>Tags: </span>
@@ -435,7 +427,7 @@ useEffect(() => {
                 <div className="version-info">
                   <h4>Version {selectedVersions.right.version}</h4>
                   <div className="version-metadata">
-                    <p>Uploaded: {new Date(selectedVersions.right.createdAt).toLocaleDateString()}</p>
+                    <p>Uploaded: {new Date(selectedVersions.right.uploadedAt).toLocaleDateString()}</p>
                     {selectedVersions.right.tags?.length > 0 && (
                       <div className="version-tags">
                         <span>Tags: </span>
@@ -480,7 +472,7 @@ useEffect(() => {
                 <div>
                   <h4>Version {selectedVersions.left.version}</h4>
                   <div className="version-metadata">
-                    <p>Uploaded: {new Date(selectedVersions.left.createdAt).toLocaleDateString()}</p>
+                    <p>Uploaded: {new Date(selectedVersions.left.uploadedAt).toLocaleDateString()}</p>
                   </div>
                 </div>
                 <button 
@@ -508,7 +500,7 @@ useEffect(() => {
                 <div>
                   <h4>Version {selectedVersions.right.version}</h4>
                   <div className="version-metadata">
-                    <p>Uploaded: {new Date(selectedVersions.right.createdAt).toLocaleDateString()}</p>
+                    <p>Uploaded: {new Date(selectedVersions.right.uploadedAt).toLocaleDateString()}</p>
                   </div>
                 </div>
                 <button 
