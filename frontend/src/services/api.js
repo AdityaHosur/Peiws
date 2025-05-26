@@ -94,6 +94,17 @@ export const createOrganization = async (token, name, description) => {
     throw error.response?.data || { message: 'An error occurred' };
   }
 };
+export const getUserInvitations = async (token) => {
+  try {
+    const response = await axios.get(
+      `${API_BASE_URL}/organization/invitations`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: 'An error occurred' };
+  }
+};
 
 // Handle invitations
 export const handleInvitation = async (token, organizationId, email, action) => {

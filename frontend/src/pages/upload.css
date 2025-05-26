@@ -42,7 +42,7 @@ body.dark-mode .upload-card {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 130px;
+  height: 110px;
 }
 
 body.dark-mode .upload-drag-box {

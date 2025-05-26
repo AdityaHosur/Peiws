@@ -221,7 +221,7 @@ useEffect(() => {
               className={`segment-button ${activeTab === 'preview' ? 'active' : ''}`}
               onClick={() => setActiveTab('preview')}
             >
-              Preview Document
+              Preview Doc
             </button>
           </div>
           {selectedDoc && (

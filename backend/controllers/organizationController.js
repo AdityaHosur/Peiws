@@ -91,7 +91,9 @@ exports.requestToJoin = async (req, res) => {
     if (organization.members.includes(req.user.id)) {
       return res.status(400).json({ message: 'You are already a member of this organization' });
     }
-
+    if (organization.admin.includes(req.user.id)) {
+      return res.status(400).json({ message: 'You are already a member of this organization' });
+    }
     // Check if the user has already sent a join request
     if (organization.pendingRequests.some((req) => req.email === req.user.email)) {
       return res.status(400).json({ message: 'You have already requested to join this organization' });
@@ -116,11 +118,6 @@ exports.handleInvitation = async (req, res) => {
     const organization = await Organization.findById(organizationId);
     if (!organization) {
       return res.status(404).json({ message: 'Organization not found' });
-    }
-
-    // Check if the requester is an admin
-    if (organization.admin.toString() !== req.user.id) {
-      return res.status(403).json({ message: 'Only admins can handle invitations' });
     }
 
     // Find the pending request
@@ -204,26 +201,41 @@ exports.listUserOrganizations = async (req, res) => {
   }
 };
 
-exports.listUsers= async (req, res) => {
+exports.listUsers = async (req, res) => {
   try {
     const { organizationId } = req.params;
 
-    // Find the organization
-    const organization = await Organization.findById(organizationId).populate('members', 'name email');
+    // Find the organization and populate both admin and members
+    const organization = await Organization.findById(organizationId)
+      .populate('members', 'name email')
+      .populate('admin', 'name email');
+    
     if (!organization) {
       return res.status(404).json({ message: 'Organization not found' });
     }
 
-    // Return the members along with their roles
-    const members = organization.members.map((member) => ({
-      id: member._id,
-      name: member.name,
-      email: member.email,
-      role: member._id.toString() === organization.admin.toString() ? 'Admin' : 'Member',
+    const adminMembers = organization.admin.map(admin => ({
+      id: admin._id,
+      name: admin.name,
+      email: admin.email,
+      role: 'Admin'
     }));
 
-    res.status(200).json({ members });
+    const adminIds = organization.admin.map(admin => admin._id.toString());
+
+    const regularMembers = organization.members
+      .filter(member => !adminIds.includes(member._id.toString()))
+      .map(member => ({
+        id: member._id,
+        name: member.name,
+        email: member.email,
+        role: 'Member'
+      }));
+    const allMembers = [...adminMembers, ...regularMembers];
+
+    res.status(200).json({ members: allMembers });
   } catch (error) {
+    console.error('Error listing organization users:', error);
     res.status(500).json({ message: 'Server error', error });
   }
 };
@@ -245,19 +257,96 @@ exports.updateRole = async (req, res) => {
     }
 
     // Check if the requester is an admin
-    if (organization.admin.toString() !== req.user.id) {
+    const isRequesterAdmin = organization.admin.some(
+      adminId => adminId.toString() === req.user.id
+    );
+    
+    if (!isRequesterAdmin) {
       return res.status(403).json({ message: 'Only admins can update roles' });
     }
 
-    // Update the admin role if necessary
+    // Convert ObjectIds to strings for comparison
+    const adminIds = organization.admin.map(id => id.toString());
+    const memberIds = organization.members.map(id => id.toString());
+    
+    // Check if user exists in the organization
+    if (!adminIds.includes(memberId) && !memberIds.includes(memberId)) {
+      return res.status(404).json({ message: 'User not found in organization' });
+    }
+    
     if (role === 'Admin') {
-      organization.admin = memberId;
+      // Make user an admin if not already
+      if (!adminIds.includes(memberId)) {
+        // Add to admin array
+        organization.admin.push(memberId);
+        
+        // Remove from members array if present
+        organization.members = organization.members.filter(
+          id => id.toString() !== memberId
+        );
+      }
+    } else if (role === 'Member') {
+      // Make user a member if not already
+      if (adminIds.includes(memberId)) {
+        // Ensure there's at least one admin remaining
+        if (organization.admin.length <= 1) {
+          return res.status(400).json({ 
+            message: 'Cannot demote the last admin. Assign another admin first.' 
+          });
+        }
+        
+        // Remove from admin array
+        organization.admin = organization.admin.filter(
+          id => id.toString() !== memberId
+        );
+        
+        // Add to members array if not present
+        if (!memberIds.includes(memberId)) {
+          organization.members.push(memberId);
+        }
+      }
     }
 
     await organization.save();
 
-    res.status(200).json({ message: 'Role updated successfully' });
+    res.status(200).json({ 
+      message: 'Role updated successfully',
+      organization: {
+        id: organization._id,
+        name: organization.name,
+        admin: organization.admin,
+        members: organization.members
+      }
+    });
   } catch (error) {
+    console.error('Error updating user role:', error);
+    res.status(500).json({ message: 'Server error', error });
+  }
+};
+
+exports.getUserInvitations = async (req, res) => {
+  try {
+    // Find all organizations where the user's email is in pendingRequests
+    const organizations = await Organization.find({
+      'pendingRequests.email': req.user.email
+    });
+
+    // Format the invitations
+    const invitations = organizations.map(org => {
+      // Find the specific request that matches this user's email
+      const userRequest = org.pendingRequests.find(request => request.email === req.user.email);
+      
+      return {
+        organizationId: org._id,
+        organizationName: org.name,
+        role: userRequest?.role || 'Member',
+        requestId: userRequest?._id // Include the request ID for reference
+      };
+    });
+
+    res.status(200).json({ invitations });
+  } catch (error) {
+    console.error('Error fetching user invitations:', error);
     res.status(500).json({ message: 'Server error', error });
   }
 };

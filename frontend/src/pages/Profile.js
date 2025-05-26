@@ -5,6 +5,8 @@ import {
   getOrganizations,
   joinOrganization,
   createOrganization,
+  getUserInvitations,
+  handleInvitation
 } from '../services/api';
 import { useToast } from '../components/ToastContext'; // Import toast hook
 import './profile.css';
@@ -17,6 +19,8 @@ const Profile = () => {
   const [orgName, setOrgName] = useState('');
   const [description, setDescription] = useState('');
   const [error, setError] = useState('');
+  const [invitations, setInvitations] = useState([]);
+  const [loadingInvitations, setLoadingInvitations] = useState(false);
   const token = localStorage.getItem('token'); // Retrieve token from localStorage
   const { showToast } = useToast(); // Use the toast hook
 
@@ -30,6 +34,11 @@ const Profile = () => {
 
         const orgs = await getOrganizations(token);
         setOrganizations(orgs.organizations);
+
+        setLoadingInvitations(true);
+        const userInvitations = await getUserInvitations(token);
+        setInvitations(userInvitations.invitations || []);
+        setLoadingInvitations(false);
       } catch (err) {
         setError(err.message || 'Failed to fetch data');
         showToast(err.message || 'Failed to fetch data', 'error');
@@ -78,6 +87,25 @@ const Profile = () => {
     } catch (err) {
       setError(err.message || 'Failed to join organization');
       showToast(err.message || 'Failed to join organization', 'error');
+    }
+  };
+
+  const handleInvitationResponse = async (organizationId, action) => {
+    try {
+      await handleInvitation(token, organizationId, email, action);
+      showToast(`Invitation ${action === 'accept' ? 'accepted' : 'rejected'} successfully!`, 'success');
+      
+      // Update invitations list by removing the one that was acted upon
+      setInvitations(invitations.filter(inv => inv.organizationId !== organizationId));
+      
+      // If accepted, refresh organizations list
+      if (action === 'accept') {
+        const orgs = await getOrganizations(token);
+        setOrganizations(orgs.organizations);
+      }
+    } catch (err) {
+      setError(err.message || `Failed to ${action} invitation`);
+      showToast(err.message || `Failed to ${action} invitation`, 'error');
     }
   };
 
@@ -141,6 +169,12 @@ const Profile = () => {
           >
             Join
           </button>
+          <button
+            className={`segment-button ${activeTab === 'invitations' ? 'active' : ''}`}
+            onClick={() => setActiveTab('invitations')}
+          >
+            Invitations
+          </button>
         </div>
 
         {/* Content based on active tab */}
@@ -195,6 +229,41 @@ const Profile = () => {
                 Create
               </button>
             </form>
+          </div>
+        )}
+        {activeTab === 'invitations' && (
+          <div className="invitations-organization">
+            <h3 className="content-title">Organization Invitations</h3>
+            {loadingInvitations ? (
+              <p className="loading-text">Loading invitations...</p>
+            ) : invitations.length > 0 ? (
+              <ul className="invitations-list">
+                {invitations.map((invitation) => (
+                  <li key={invitation.organizationId} className="invitation-item">
+                    <div className="invitation-details">
+                      <span className="organization-name">{invitation.organizationName}</span>
+                      <span className="invitation-role">Role: {invitation.role}</span>
+                    </div>
+                    <div className="invitation-actions">
+                      <button 
+                        className="accept-button"
+                        onClick={() => handleInvitationResponse(invitation.organizationId, 'accept')}
+                      >
+                        Accept
+                      </button>
+                      <button 
+                        className="reject-button"
+                        onClick={() => handleInvitationResponse(invitation.organizationId, 'reject')}
+                      >
+                        Reject
+                      </button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="no-invitations">You don't have any pending invitations</p>
+            )}
           </div>
         )}
       </div>

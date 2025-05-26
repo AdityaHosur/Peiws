@@ -502,7 +502,7 @@ textarea {
   border: 1px solid #ccc;
   border-radius: 8px;
   padding: 1rem;
-  background-color: #f9f9f9;
+  background-color: var(--accent-light);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -545,10 +545,14 @@ textarea {
   color: #555;
 }
 
-.file-status {
-  font-size: 0.9rem;
-  font-weight: bold;
-  color: #007bff;
+.file-status.assigned {
+  color: #28a745; /* Green color for assigned status */
+  font-weight: 500;
+}
+
+.file-status.not-assigned {
+  color: #dc3545; /* Red color for not assigned status */
+  font-weight: 500;
 }
 
 .assign-button {
@@ -638,6 +642,81 @@ textarea {
   background-color: #c82333;
 }
 
+/* role change confirmation */
+.role-confirmation {
+  display: flex;
+  flex-direction: column;
+  margin-top: 0.5rem;
+  padding: 0.7rem;
+  background-color: var(--surface-light);
+  border: 1px solid var(--border-light);
+  border-radius: 4px;
+  gap: 0.7rem;
+  width: 100%;
+  align-items: center; /* Center the content */
+}
+
+.confirmation-message {
+  font-size: 0.9rem;
+  color: var(--text-light);
+  margin-bottom: 0;
+  text-align: center;
+}
+
+.confirmation-buttons {
+  display: flex;
+  gap: 0.5rem;
+  width: 100%;
+  align-items: center; /* Ensure vertical alignment */
+  height: 30px; /* Set fixed height for container */
+}
+
+.confirm-button, 
+.cancel-button {
+  padding: 0.3rem 0.6rem;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  flex: 1; /* Make buttons equal width */
+  text-align: center;
+  min-width: 70px; /* Ensure minimum width */
+  height: 30px; /* Set fixed height */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0; /* Reset any margin */
+  box-sizing: border-box; /* Include padding in height calculation */
+  line-height: 1; /* Normalize line height */
+}
+
+.confirm-button {
+  background-color: #28a745;
+  color: white;
+}
+
+.confirm-button:hover {
+  background-color: #218838;
+}
+
+.cancel-button {
+  background-color: #dc3545;
+  color: white;
+}
+
+.cancel-button:hover {
+  background-color: #c82333;
+}
+
+body.dark-mode .role-confirmation {
+  background-color: var(--surface-dark);
+  border-color: var(--border-dark);
+}
+
+body.dark-mode .confirmation-message {
+  color: var(--text-dark);
+}
 /* History tab specific styles */
 .history-tab {
   padding: 0;

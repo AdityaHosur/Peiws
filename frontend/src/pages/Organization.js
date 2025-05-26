@@ -33,6 +33,9 @@ const Organization = () => {
   const { showToast } = useToast(); // Use the toast hook
   const [history, setHistory] = useState([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
+  const [confirmAction, setConfirmAction] = useState(null);
+  const [pendingRoleChange, setPendingRoleChange] = useState(null);
+
 
   // Fetch organizations on component mount
   useEffect(() => {
@@ -158,20 +161,38 @@ const handleInviteUsers = async () => {
 
 const handleRoleUpdate = async (memberId, newRole) => {
   try {
-    await updateMemberRole(token, selectedOrg.id, memberId, newRole);
-    // Replace alert with toast
-    showToast('Role updated successfully!', 'success');
+    if (confirmAction === 'role-change' && pendingRoleChange && 
+        pendingRoleChange.memberId === memberId && pendingRoleChange.newRole === newRole) {
+      // User has confirmed, proceed with the update
+      await updateMemberRole(token, selectedOrg.id, memberId, newRole);
+      showToast('Role updated successfully!', 'success');
 
-    // Update the members list
-    setMembers((prevMembers) =>
-      prevMembers.map((member) =>
-        member.id === memberId ? { ...member, role: newRole } : member
-      )
-    );
+      // Update the members list
+      setMembers((prevMembers) =>
+        prevMembers.map((member) =>
+          member.id === memberId ? { ...member, role: newRole } : member
+        )
+      );
+      
+      // Reset confirmation state
+      setConfirmAction(null);
+      setPendingRoleChange(null);
+    } else {
+      // Store the pending change and show confirmation dialog
+      setPendingRoleChange({ memberId, newRole });
+      setConfirmAction('role-change');
+    }
   } catch (err) {
     setError(err.message || 'Failed to update role');
     showToast(err.message || 'Failed to update role', 'error');
+    setConfirmAction(null);
+    setPendingRoleChange(null);
   }
+};
+
+const cancelRoleChange = () => {
+  setConfirmAction(null);
+  setPendingRoleChange(null);
 };
 
 // Handle reviewer selection
@@ -399,13 +420,45 @@ const handleAssignReviewers = async (fileId) => {
                                   <span className="member-role">
                                     Role: 
                                     <select
-                                      value={member.role}
+                                      value={confirmAction === 'role-change' && 
+                                            pendingRoleChange && 
+                                            pendingRoleChange.memberId === member.id 
+                                        ? pendingRoleChange.newRole 
+                                        : member.role}
                                       onChange={(e) => handleRoleUpdate(member.id, e.target.value)}
-                                      disabled={member.id === selectedOrg.admin}
+                                      disabled={member.id === selectedOrg.admin || 
+                                              (confirmAction === 'role-change' && 
+                                                pendingRoleChange && 
+                                                pendingRoleChange.memberId !== member.id)}
                                     >
                                       <option value="Admin">Admin</option>
                                       <option value="Member">Member</option>
                                     </select>
+                                    
+                                    {/* Show confirmation buttons if this member has a pending role change */}
+                                    {confirmAction === 'role-change' && 
+                                    pendingRoleChange && 
+                                    pendingRoleChange.memberId === member.id && (
+                                      <div className="role-confirmation">
+                                        <span className="confirmation-message">
+                                          Change role to {pendingRoleChange.newRole}?
+                                        </span>
+                                        <div className="confirmation-buttons">
+                                          <button 
+                                            className="confirm-button"
+                                            onClick={() => handleRoleUpdate(member.id, pendingRoleChange.newRole)}
+                                          >
+                                            Confirm
+                                          </button>
+                                          <button 
+                                            className="cancel-button"
+                                            onClick={cancelRoleChange}
+                                          >
+                                            Cancel
+                                          </button>
+                                        </div>
+                                      </div>
+                                    )}
                                   </span>
                                 ) : (
                                   // Show read-only role for members
@@ -481,15 +534,18 @@ const handleAssignReviewers = async (fileId) => {
                               </div>
                               <div className="file-footer">
                                 <span className="file-tags">Tags: {file.tags.join(', ')}</span>
-                                <span className="file-status">
+                                <span className={`file-status ${file.reviewers.length === 0 ? 'not-assigned' : 'assigned'}`}>
                                   Status: {file.reviewers.length === 0 ? 'Not Assigned' : 'Assigned'}
                                 </span>
-                                <button
-                                  className="assign-button"
-                                  onClick={() => setSelectedFile(file)}
-                                >
-                                  Assign
-                                </button>
+                                {/* Only show the assign button if the file is not assigned */}
+                                {file.reviewers.length === 0 && (
+                                  <button
+                                    className="assign-button"
+                                    onClick={() => setSelectedFile(file)}
+                                  >
+                                    Assign
+                                  </button>
+                                )}
                               </div>
                             </li>
                           ))}

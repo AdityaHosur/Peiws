@@ -27,6 +27,7 @@ body.dark-mode .navbar {
 .navbar-links {
   display: flex;
   gap: 1.5rem;
+  align-items: center;
 }
 
 .navbar a {
@@ -34,15 +35,85 @@ body.dark-mode .navbar {
   color: inherit;
   font-weight: bold;
   font-size: 1rem;
-  transition: color 0.3s;
+  transition: all 0.3s;
+  position: relative;
+  padding: 0.3rem 0.5rem;
+  border-radius: 5px;
 }
 
-.navbar a:hover {
+/* Active link styling */
+.navbar a.active {
+  background-color: rgba(255, 255, 255, 0.25);
+  color: #000000;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  position: relative;
+  transform: translateY(-1px);
+}
+
+body.dark-mode .navbar a.active {
+  background-color: rgba(0, 0, 0, 0.25);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.navbar a.active::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at center, rgba(255, 255, 255, 0.8) 0%, transparent 70%);
+  opacity: 0.5;
+  border-radius: 5px;
+  z-index: -1;
+}
+
+body.dark-mode .navbar a.active::before {
+  background: radial-gradient(circle at center, rgba(255, 245, 157, 0.3) 0%, transparent 70%);
+}
+/* Underline indicator for active links */
+.navbar a.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 20%;
+  right: 20%;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, var(--primary-dark) 20%, var(--primary-dark) 80%, transparent);
+  border-radius: 3px;
+  transition: all 0.3s ease;
+}
+
+body.dark-mode .navbar a.active::after {
+  background: linear-gradient(90deg, transparent, var(--primary-light) 20%, var(--primary-light) 80%, transparent);
+}
+
+/* Auth link special styling */
+.navbar a.auth-link {
+  margin-left: 0.5rem;
+  font-weight: 700;
+}
+.navbar a.auth-link.active {
+  background-color: var(--primary-dark);
+  color: var(--accent-light);
+}
+
+body.dark-mode .navbar a.auth-link.active {
+  background-color: var(--primary-light);
+  color: var(--accent-dark);
+}
+
+/* Hover effect */
+.navbar a:hover:not(.active) {
   color: var(--primary-dark);
+  background-color: rgba(0, 0, 0, 0.05);
 }
 
-body.dark-mode .navbar a:hover {
+body.dark-mode .navbar a:hover:not(.active) {
   color: var(--primary-light);
+  background-color: rgba(255, 255, 255, 0.05);
 }
 
 .theme-toggle {
@@ -64,4 +135,29 @@ body.dark-mode .navbar a:hover {
 
 body.dark-mode .theme-toggle:hover {
   background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .navbar {
+    padding: 0.75rem 1rem;
+  }
+  
+  .navbar-links {
+    gap: 0.8rem;
+  }
+  
+  .navbar a {
+    font-size: 0.9rem;
+    padding: 0.2rem 0.4rem;
+  }
+  
+  .navbar-title {
+    font-size: 1.5rem;
+  }
+  
+  .theme-toggle {
+    font-size: 0.9rem;
+    padding: 0.4rem 0.8rem;
+  }
 }
