@@ -20,7 +20,7 @@ router.post('/upload', authMiddleware, upload.single('file'), uploadFile);
 
 // Get all files
 router.get('/files', authMiddleware, getAllFiles);
-router.get('/user-uploads', authMiddleware, getUserUploads);
+router.get('/uploads', authMiddleware, getUserUploads);
 
 // Download a file by filename
 router.get('/diff', authMiddleware, getDocumentDiff);

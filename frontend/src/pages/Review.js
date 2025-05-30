@@ -12,32 +12,52 @@ const Review = () => {
   const token = localStorage.getItem('token');
   const { showToast } = useToast();
 
-  // Fetch assigned reviews on component mount
-  useEffect(() => {
+ useEffect(() => {
+    let isMounted = true; // Track component mount state
+    
     const fetchAssignedReviews = async () => {
+      if (!token) {
+        setError('Authentication required');
+        setLoading(false);
+        return;
+      }
+      
       setLoading(true);
       try {
         const data = await getAssignedReviews(token);
-        const validReviews = data.filter(
-          (review) => review && review.fileId && review.fileId.filename
-        );
+        
+        // Only update state if component is still mounted
+        if (isMounted) {
+          const validReviews = data.filter(
+            (review) => review && review.fileId && review.fileId.filename
+          );
 
-        if (validReviews.length === 0) {
-          setError('No valid reviews found.');
-          showToast('No valid reviews found.', 'info');
+          setAssignedReviews(validReviews);
+          
+          if (validReviews.length === 0) {
+            setError('No reviews assigned yet.');
+          }
+          
+          setLoading(false);
         }
-
-        setAssignedReviews(validReviews);
       } catch (err) {
-        const errorMessage = err.message || 'Failed to fetch assigned reviews';
-        setError(errorMessage);
-        showToast(errorMessage, 'error');
-      } finally {
-        setLoading(false);
+        if (isMounted) {
+          const errorMessage = err.message || 'Failed to fetch assigned reviews';
+          setError(errorMessage);
+          showToast(errorMessage, 'error');
+          setLoading(false);
+        }
       }
     };
+    
     fetchAssignedReviews();
+    
+    // Cleanup function to prevent state updates after unmount
+    return () => {
+      isMounted = false;
+    };
   }, [token, showToast]);
+
 
   // Helper to determine deadline proximity class
   const getDeadlineClass = (deadlineDate) => {
@@ -69,14 +89,15 @@ const Review = () => {
       {/* Left Card: Assigned Reviews */}
       <div className="review-card docs-list">
         <h2 className="review-title">Assigned Reviews</h2>
-        {loading && <p className="loading-message">Loading reviews...</p>}
-        {error && <p className="error-message">{error}</p>}
-
-        {!loading && assignedReviews.length === 0 && !error && (
+        {loading ? (
+          <p className="loading-message">Loading reviews...</p>
+        ) : error ? (
+          <p className="error-message">{error}</p>
+        ) : assignedReviews.length === 0 ? (
           <p className="empty-message">No reviews assigned yet.</p>
-        )}
-        <ul className="documents-list">
-          {assignedReviews.map((review) => {
+        ) : (
+          <ul className="documents-list">
+            {assignedReviews.map((review) => {
             // Determine review status
             let status = review.status || 'pending';
             let tags = review.fileId.tags || [];
@@ -129,6 +150,7 @@ const Review = () => {
             );
           })}
         </ul>
+        )}
       </div>
 
       {/* Right Card: Review Details */}

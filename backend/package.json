@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "main": "app.js",
   "scripts": {
-    "test": "jest",
-    "test:api": "jest --config jest.api.config.js",
+    "test": "jest --forceExit",
+    "test:api": "jest --config jest.api.config.js --forceExit",
     "start": "nodemon server.js"
   },
   "author": "",

@@ -30,10 +30,12 @@ const Dashboard = () => {
           const orgs = await getOrganizations(token);
           setOrganizations(orgs?.organizations || []);
         }
+        setLoading(false);
       } catch (err) {
         console.error('Error fetching dashboard data:', err);
         setError('Failed to load dashboard data');
         showToast('Failed to load dashboard data', 'error');
+        setLoading(false);
       } finally {
         setLoading(false);
       }

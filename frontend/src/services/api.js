@@ -231,7 +231,7 @@ export const assignReviewersToFile = async (token, fileId, reviewers) => {
 export const getUserUploads = async (token) => {
   try {
     const response = await axios.get(
-      `${API_BASE_URL}/file/user-uploads`,
+      `${API_BASE_URL}/file/uploads`,
       {
         headers: { Authorization: `Bearer ${token}` }
       }

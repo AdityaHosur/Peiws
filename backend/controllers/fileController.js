@@ -157,9 +157,7 @@ exports.getUserUploads = async (req, res) => {
       .sort({ createdAt: -1 }) // Sort by upload date, newest first
       .lean();
     
-    if (!uploads || uploads.length === 0) {
-      return res.status(404).json({ message: 'No uploads found for this user' });
-    }
+    
     
     res.status(200).json(uploads);
   } catch (error) {
@@ -173,10 +171,6 @@ exports.getAllFiles = async (req, res) => {
   try {
     const gfsBucket = getGridFSBucket();
     const files = await gfsBucket.find().toArray();
-
-    if (!files || files.length === 0) {
-      return res.status(404).json({ message: 'No files found' });
-    }
 
     res.status(200).json(files);
   } catch (error) {

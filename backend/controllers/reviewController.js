@@ -20,10 +20,6 @@ exports.getReviewsAssignedToUser = async (req, res) => {
 
     const validReviews = reviews.filter(review => review.fileId !== null);
     console.log('Valid Reviews:', reviews);
-    if (!validReviews || validReviews.length === 0) {
-      return res.status(404).json({ message: 'No reviews assigned to this user' });
-    }
-
     res.status(200).json(reviews);
   } catch (error) {
     res.status(500).json({ message: 'Server error', error });

@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Document, Page } from 'react-pdf';
-import { pdfjs } from 'react-pdf';
+import { Document, Page , pdfjs} from 'react-pdf';
 import AnnotationTools from './AnnotationTools';
 import CommentMarker from './CommentMarker';
 import StickyNote from './StickyNote';
@@ -10,10 +9,11 @@ import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import { saveReviewDetails, getReviewDetails, updateReviewStatus,getReviewStatus } from '../services/api';
 import './DocViewer.css';
 
-// Configure PDF.js worker
-pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
+pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+  'pdfjs-dist/build/pdf.worker.min.mjs',
+  import.meta.url,
+).toString();
 
-// Helper function to clear annotations from the DOM
 const clearAllAnnotations = () => {
   const textLayer = document.querySelector('.react-pdf__Page__textContent');
   if (textLayer) {
