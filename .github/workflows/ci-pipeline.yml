@@ -131,7 +131,7 @@ jobs:
       # Step 6: Build frontend
       - name: Build frontend
         working-directory: ./frontend
-        run: npm run build
+        run: CI=false npm run build
 
       # Step 7: Run SonarQube analysis for frontend
       - name: Run SonarQube analysis

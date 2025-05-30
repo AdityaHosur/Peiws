@@ -1,4 +1,3 @@
-import React from 'react';
 import './CardLayout.css';
 
 const CardLayout = ({ children }) => {

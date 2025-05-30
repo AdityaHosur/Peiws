@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import './CommentMarker.css';
 
 const CommentMarker = ({ comment, position, scale, onDelete, onUpdate, readOnly=false }) => {

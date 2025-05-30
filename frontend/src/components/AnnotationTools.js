@@ -1,4 +1,3 @@
-import React from 'react';
 import './AnnotationTools.css';
 
 const AnnotationTools = ({ 
