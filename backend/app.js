@@ -11,10 +11,13 @@ const prometheus = require('prom-client');
 
 dotenv.config();
 
-const app = express();
+const app = express();;
 
 const collectDefaultMetrics = prometheus.collectDefaultMetrics;
 collectDefaultMetrics({ timeout: 5000 });
+
+const register = new prometheus.Registry();
+prometheus.collectDefaultMetrics({ register })
 
 const httpRequestDurationMicroseconds = new prometheus.Histogram({
   name: 'http_request_duration_ms',
@@ -33,6 +36,10 @@ const activeConnections = new prometheus.Gauge({
   name: 'http_active_connections',
   help: 'Number of active HTTP connections'
 });
+
+register.registerMetric(httpRequestDurationMicroseconds);
+register.registerMetric(totalRequests);
+register.registerMetric(activeConnections);
 
 // Middleware
 app.use(express.json());
@@ -64,8 +71,8 @@ app.get('/health', (req, res) => {
 });
 
 app.get('/metrics', async (req, res) => {
-  res.set('Content-Type', prometheus.register.contentType);
-  res.end(await prometheus.register.metrics());
+  res.set('Content-Type', register.contentType);
+  res.end(await register.metrics());
 });
 
 // Routes
