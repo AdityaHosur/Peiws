@@ -9,10 +9,7 @@ import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import { saveReviewDetails, getReviewDetails, updateReviewStatus,getReviewStatus } from '../services/api';
 import './DocViewer.css';
 
-pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-  'pdfjs-dist/build/pdf.worker.min.mjs',
-  import.meta.url,
-).toString();
+pdfjs.GlobalWorkerOptions.workerSrc = 'https://unpkg.com/pdfjs-dist@4.8.69/build/pdf.worker.mjs';
 
 const clearAllAnnotations = () => {
   const textLayer = document.querySelector('.react-pdf__Page__textContent');

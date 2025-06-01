@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:5000'; // Replace with your backend URL
+const API_BASE_URL = 'https://piews-backend.onrender.com'; 
 
 // Register a new user
 export const registerUser = async (name, email, password) => {

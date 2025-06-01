@@ -24,7 +24,7 @@ const VersionCompare = ({ fileGroupId, documentTitle }) => {
   const leftId = selectedVersions.left.fileId;
   const rightId = selectedVersions.right.fileId;
   // Get the API URL for diff endpoint
-  const baseUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+  const baseUrl = process.env.REACT_APP_API_URL || 'https://piews-backend.onrender.com';
   const token = localStorage.getItem('token');
   
   if (!token) {
@@ -79,7 +79,7 @@ const ConnectionStatus = ({ onRetry }) => {
     const checkConnection = async () => {
       try {
         // Simple API endpoint to check if server is available
-        const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/health`, {
+        const response = await fetch(`${process.env.REACT_APP_API_URL || 'https://piews-backend.onrender.com'}/health`, {
           method: 'GET',
           headers: { 'Accept': 'application/json' },
           mode: 'no-cors'
